@@ -1,4 +1,4 @@
-import os
+yukiimport os
 import streamlit as st
 from groq import Groq
 
@@ -10,7 +10,7 @@ st.caption("Educational medication information only.")
 question = st.text_input("Ask a medication question")
 
 if question:
-    api_key = os.getenv("GROQ_API_KEY")
+ api_key = st.secrets.get("GROQ_API_KEY")
 
     if not api_key:
         st.error("Groq API key is not configured.")
