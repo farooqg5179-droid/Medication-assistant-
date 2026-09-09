@@ -1,0 +1,18 @@
+[
+  {
+    "medicine_name": "Paracetamol",
+    "generic_name": "Acetaminophen",
+    "common_uses": "Used for temporary relief of mild to moderate pain and fever.",
+    "common_side_effects": "Side effects are uncommon when used correctly, but some people may experience nausea or other mild symptoms.",
+    "serious_warnings": "Taking more than recommended can cause serious liver damage. Always follow the product label or healthcare professional advice.",
+    "source": "NHS / FDA - verify and expand before production use"
+  },
+  {
+    "medicine_name": "Ibuprofen",
+    "generic_name": "Ibuprofen",
+    "common_uses": "Used for pain, fever, and inflammation.",
+    "common_side_effects": "May cause indigestion, stomach discomfort, nausea, or other gastrointestinal symptoms.",
+    "serious_warnings": "NSAIDs can cause stomach bleeding and kidney problems in some people. Seek professional advice when appropriate.",
+    "source": "NHS / FDA - verify and expand before production use"
+  }
+]
