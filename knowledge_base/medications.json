@@ -2,17 +2,189 @@
   {
     "medicine_name": "Paracetamol",
     "generic_name": "Acetaminophen",
-    "common_uses": "Used for temporary relief of mild to moderate pain and fever.",
-    "common_side_effects": "Side effects are uncommon when used correctly, but some people may experience nausea or other mild symptoms.",
-    "serious_warnings": "Taking more than recommended can cause serious liver damage. Always follow the product label or healthcare professional advice.",
-    "source": "NHS / FDA - verify and expand before production use"
+    "common_uses": "Used for temporary relief of mild to moderate pain and reduction of fever.",
+    "common_side_effects": "Usually well tolerated when used as directed.",
+    "serious_warnings": "Taking more than recommended can cause serious liver damage.",
+    "important_precautions": "Do not exceed the recommended dose. Check other medicines for acetaminophen. Tell a healthcare professional if you have liver disease.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a681004.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
   },
   {
     "medicine_name": "Ibuprofen",
     "generic_name": "Ibuprofen",
-    "common_uses": "Used for pain, fever, and inflammation.",
-    "common_side_effects": "May cause indigestion, stomach discomfort, nausea, or other gastrointestinal symptoms.",
-    "serious_warnings": "NSAIDs can cause stomach bleeding and kidney problems in some people. Seek professional advice when appropriate.",
-    "source": "NHS / FDA - verify and expand before production use"
-  }
+    "common_uses": "Used for mild to moderate pain, fever, inflammation, and certain types of arthritis.",
+    "common_side_effects": "May cause stomach discomfort, nausea, indigestion, or dizziness.",
+    "serious_warnings": "NSAIDs can increase the risk of heart attack or stroke and can cause serious stomach or intestinal bleeding.",
+    "important_precautions": "Tell a healthcare professional about heart disease, kidney disease, ulcers, or bleeding problems. Do not combine with other NSAIDs unless advised.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a682159.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Amoxicillin",
+    "generic_name": "Amoxicillin",
+    "common_uses": "Used to treat certain bacterial infections, including some respiratory, skin, and urinary tract infections.",
+    "common_side_effects": "May cause nausea, vomiting, or diarrhea.",
+    "serious_warnings": "Serious allergic reactions can occur. Antibiotic-associated severe diarrhea can also occur.",
+    "important_precautions": "Tell a healthcare professional about penicillin allergies, kidney disease, or other medical conditions. Take exactly as prescribed.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a685001.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Azithromycin",
+    "generic_name": "Azithromycin",
+    "common_uses": "Used to treat certain bacterial infections.",
+    "common_side_effects": "May cause nausea, diarrhea, stomach discomfort, or vomiting.",
+    "serious_warnings": "May cause serious heart rhythm problems in susceptible patients and serious allergic reactions.",
+    "important_precautions": "Tell a healthcare professional about heart rhythm problems, liver disease, or other medicines being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a697037.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Metformin",
+    "generic_name": "Metformin",
+    "common_uses": "Used to control high blood sugar in people with type 2 diabetes.",
+    "common_side_effects": "May cause diarrhea, nausea, stomach discomfort, or gas.",
+    "serious_warnings": "Rarely, metformin can cause a serious condition called lactic acidosis.",
+    "important_precautions": "Tell a healthcare professional about kidney, liver, or heart problems and all medicines being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a696005.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Omeprazole",
+    "generic_name": "Omeprazole",
+    "common_uses": "Used to treat gastroesophageal reflux disease, certain ulcers, and conditions involving excessive stomach acid.",
+    "common_side_effects": "May cause headache, nausea, abdominal discomfort, or diarrhea.",
+    "serious_warnings": "Long-term or high-dose use may be associated with serious adverse effects and drug interactions.",
+    "important_precautions": "Tell a healthcare professional about all medicines being taken and any persistent or worsening symptoms.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a693050.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Cetirizine",
+    "generic_name": "Cetirizine",
+    "common_uses": "Used to relieve allergy symptoms and treat hives.",
+    "common_side_effects": "May cause drowsiness, tiredness, or dry mouth.",
+    "serious_warnings": "Serious allergic reactions can occur. Severe itching has rarely been reported after stopping long-term use.",
+    "important_precautions": "May cause drowsiness. Tell a healthcare professional about other medicines being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a623043.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Loratadine",
+    "generic_name": "Loratadine",
+    "common_uses": "Used to relieve sneezing, runny nose, and itchy or watery eyes caused by allergies.",
+    "common_side_effects": "May cause headache, drowsiness, tiredness, or dry mouth.",
+    "serious_warnings": "Serious allergic reactions can occur.",
+    "important_precautions": "Tell a healthcare professional about kidney or liver disease and other medicines being taken. Do not exceed the recommended amount.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a697038.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Aspirin",
+    "generic_name": "Aspirin",
+    "common_uses": "Used for pain, fever, inflammation, and for prevention of certain cardiovascular events when medically indicated.",
+    "common_side_effects": "May cause stomach irritation, nausea, or heartburn.",
+    "serious_warnings": "Can cause serious gastrointestinal bleeding and increased bleeding risk.",
+    "important_precautions": "Tell a healthcare professional about ulcers, bleeding disorders, or blood-thinning medicines. Aspirin should not routinely be given to children or teenagers with certain viral illnesses.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a682878.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Naproxen",
+    "generic_name": "Naproxen",
+    "common_uses": "Used to relieve pain and inflammation and to treat certain types of arthritis and menstrual pain.",
+    "common_side_effects": "May cause stomach upset, nausea, or heartburn.",
+    "serious_warnings": "May increase the risk of heart attack or stroke and can cause serious stomach or intestinal bleeding.",
+    "important_precautions": "Tell a healthcare professional about heart disease, kidney disease, ulcers, or bleeding problems.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a681029.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Doxycycline",
+    "generic_name": "Doxycycline",
+    "common_uses": "Used to treat certain bacterial infections, acne, and rosacea, and to prevent malaria in appropriate circumstances.",
+    "common_side_effects": "May cause nausea, diarrhea, stomach upset, or increased sensitivity to sunlight.",
+    "serious_warnings": "Serious allergic reactions and severe skin reactions can occur.",
+    "important_precautions": "Tell a healthcare professional about pregnancy or plans for pregnancy. Follow instructions regarding water, food, and mineral-containing products.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a682063.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Ciprofloxacin",
+    "generic_name": "Ciprofloxacin",
+    "common_uses": "Used to treat certain bacterial infections.",
+    "common_side_effects": "May cause nausea, diarrhea, dizziness, or headache.",
+    "serious_warnings": "Can increase the risk of tendinitis and tendon rupture and can cause serious nervous-system effects.",
+    "important_precautions": "Tell a healthcare professional about tendon problems, heart rhythm problems, or other medicines and supplements being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a688016.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Cefixime",
+    "generic_name": "Cefixime",
+    "common_uses": "Used to treat certain bacterial infections.",
+    "common_side_effects": "May cause diarrhea, nausea, vomiting, stomach pain, gas, or heartburn.",
+    "serious_warnings": "Serious allergic reactions can occur. Severe or bloody diarrhea can occur during or after treatment.",
+    "important_precautions": "Tell a healthcare professional about allergies to cefixime or related antibiotics and about kidney, liver, or gastrointestinal disease.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a690007.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Fluconazole",
+    "generic_name": "Fluconazole",
+    "common_uses": "Used to treat certain fungal and yeast infections and to prevent certain fungal infections in high-risk patients.",
+    "common_side_effects": "May cause headache, nausea, stomach pain, or diarrhea.",
+    "serious_warnings": "Can cause serious liver problems and serious allergic or skin reactions.",
+    "important_precautions": "Tell a healthcare professional about liver disease, allergies, pregnancy, and all medicines being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a690002.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Atorvastatin",
+    "generic_name": "Atorvastatin",
+    "common_uses": "Used to lower cholesterol and reduce the risk of certain cardiovascular events.",
+    "common_side_effects": "May cause diarrhea, joint pain, or muscle pain.",
+    "serious_warnings": "Can cause serious muscle injury and liver problems.",
+    "important_precautions": "Report unexplained muscle pain or weakness. Tell a healthcare professional about liver disease and all medicines being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a600045.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Losartan",
+    "generic_name": "Losartan",
+    "common_uses": "Used to treat high blood pressure and certain kidney problems associated with type 2 diabetes and hypertension.",
+    "common_side_effects": "May cause dizziness, back pain, or upper respiratory symptoms.",
+    "serious_warnings": "Can cause serious fetal harm or death when used during pregnancy.",
+    "important_precautions": "Do not use during pregnancy. Tell a healthcare professional about kidney disease and all medicines or supplements being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a695008.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Amlodipine",
+    "generic_name": "Amlodipine",
+    "common_uses": "Used to treat high blood pressure and certain types of angina and coronary artery disease.",
+    "common_side_effects": "May cause swelling of the ankles or feet, dizziness, or flushing.",
+    "serious_warnings": "Serious cardiovascular effects can occur in some patients.",
+    "important_precautions": "Tell a healthcare professional about heart failure, heart disease, liver disease, and other medicines being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a692044.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
 ]
+  
