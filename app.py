@@ -1,8 +1,32 @@
 import streamlit as st
 from groq import Groq
+from supabase import create_client
 from rag.retriever import retrieve_context
 
 st.set_page_config(page_title="Medication AI Assistant", page_icon="💊")
+
+# ---------------------------------------------------
+# Supabase connection setup
+# ---------------------------------------------------
+supabase_url = st.secrets.get("SUPABASE_URL")
+supabase_key = st.secrets.get("SUPABASE_KEY")
+
+supabase = None
+if supabase_url and supabase_key:
+    supabase = create_client(supabase_url, supabase_key)
+else:
+    st.warning("Supabase is not configured. Chat history will not be saved.")
+
+# ---------------------------------------------------
+# Anonymous session so every user gets a user_id
+# ---------------------------------------------------
+if supabase and "user_id" not in st.session_state:
+    try:
+        auth_response = supabase.auth.sign_in_anonymously()
+        st.session_state.user_id = auth_response.user.id
+    except Exception as e:
+        st.session_state.user_id = None
+        st.warning(f"Could not start Supabase session: {e}")
 
 st.title("💊 Medication AI Assistant")
 st.caption("Educational medication information only. This AI does not diagnose or prescribe.")
@@ -41,3 +65,23 @@ if question:
 
         with st.expander("🔎 Retrieved Knowledge Base Context"):
             st.write(context)
+
+        # ---------------------------------------------------
+        # Save chat history to Supabase (medication_chat_messages)
+        # ---------------------------------------------------
+        if supabase and st.session_state.get("user_id"):
+            try:
+                supabase.table("medication_chat_messages").insert([
+                    {
+                        "user_id": st.session_state.user_id,
+                        "role": "user",
+                        "content": question,
+                    },
+                    {
+                        "user_id": st.session_state.user_id,
+                        "role": "assistant",
+                        "content": answer,
+                    },
+                ]).execute()
+            except Exception as e:
+                st.warning(f"Could not save chat history: {e}")
