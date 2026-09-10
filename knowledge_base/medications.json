@@ -157,4 +157,34 @@
     "medicine_name": "Atorvastatin",
     "generic_name": "Atorvastatin",
     "common_uses": "Used to lower cholesterol and reduce the risk of certain cardiovascular events.",
-    "common_side_effects": "May cause diarrhea, joint
+    "common_side_effects": "May cause diarrhea, joint pain, or muscle pain.",
+    "serious_warnings": "Can cause serious muscle injury and liver problems.",
+    "important_precautions": "Report unexplained muscle pain or weakness. Tell a healthcare professional about liver disease and all medicines being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a600045.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Losartan",
+    "generic_name": "Losartan",
+    "common_uses": "Used to treat high blood pressure and certain kidney problems associated with type 2 diabetes and hypertension.",
+    "common_side_effects": "May cause dizziness, back pain, or upper respiratory symptoms.",
+    "serious_warnings": "Can cause serious fetal harm or death when used during pregnancy.",
+    "important_precautions": "Do not use during pregnancy. Tell a healthcare professional about kidney disease and all medicines or supplements being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a695008.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+  {
+    "medicine_name": "Amlodipine",
+    "generic_name": "Amlodipine",
+    "common_uses": "Used to treat high blood pressure and certain types of angina and coronary artery disease.",
+    "common_side_effects": "May cause swelling of the ankles or feet, dizziness, or flushing.",
+    "serious_warnings": "Serious cardiovascular effects can occur in some patients.",
+    "important_precautions": "Tell a healthcare professional about heart failure, heart disease, liver disease, and other medicines being taken.",
+    "source": "MedlinePlus Drug Information",
+    "source_url": "https://medlineplus.gov/druginfo/meds/a692044.html",
+    "information_verification": "Verified against MedlinePlus Drug Information on 2026-09-10."
+  },
+]
+  
