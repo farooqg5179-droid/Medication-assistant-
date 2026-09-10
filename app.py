@@ -25,9 +25,14 @@ if supabase and "user_id" not in st.session_state:
     try:
         auth_response = supabase.auth.sign_in_anonymously()
         st.session_state.user_id = auth_response.user.id
+        st.session_state.access_token = auth_response.session.access_token
     except Exception as e:
         st.session_state.user_id = None
         st.warning(f"Could not start Supabase session: {e}")
+
+# Har run pr token client ko dobara batao (Streamlit har interaction pr script re-run karta hai)
+if supabase and st.session_state.get("access_token"):
+    supabase.postgrest.auth(st.session_state.access_token)
 
 # ---------------------------------------------------
 # App title
@@ -186,4 +191,5 @@ User question:
 
                 st.warning(
                     f"Could not save chat history: {e}"
-            )
+                )
+                
