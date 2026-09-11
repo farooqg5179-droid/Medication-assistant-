@@ -152,7 +152,7 @@ if supabase and st.session_state.get("user_id"):
         # ---------------------------------------------------
         # LOGOUT
         # ---------------------------------------------------
-        if st.button(
+                if st.button(
             "🚪 Logout",
             use_container_width=True
         ):
@@ -162,6 +162,15 @@ if supabase and st.session_state.get("user_id"):
 
             except Exception:
                 pass
+
+            for key in [
+                "user_id",
+                "user_email",
+                "access_token"
+            ]:
+                st.session_state.pop(key, None)
+
+            st.rerun()
 
             for key in [
                 "user_id",
@@ -298,7 +307,7 @@ if supabase and st.session_state.get("user_id"):
 # PREMIUM CHAT UI
 # =========================================================
 
-st.markdown(""" <style> .block-container { max-width: 1050px; padding-top: 1.5rem; padding-bottom: 7rem; } #MainMenu {visibility: hidden;} footer {visibility: hidden;} .med-hero { padding: 24px 26px; border: 1px solid rgba(120,120,120,.18); border-radius: 22px; margin-bottom: 18px; background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(120,120,120,.05)); box-shadow: 0 10px 35px rgba(0,0,0,.06); } .med-hero h1 { margin: 0; font-size: clamp(28px, 6vw, 42px); letter-spacing: -1px; } .med-hero p { margin: 8px 0 0; opacity: .72; } .welcome-card { padding: 22px; border-radius: 20px; border: 1px solid rgba(120,120,120,.16); margin: 10px 0 18px; } .welcome-card h3 { margin-top: 0; } .suggestion-title { font-size: 13px; font-weight: 700; opacity: .65; margin: 5px 0 6px; } .suggestion-note { font-size: 12px; opacity: .6; margin-top: 3px; } section[data-testid="stSidebar"] { border-right: 1px solid rgba(120,120,120,.14); } [data-testid="stChatMessage"] { border-radius: 18px; margin-bottom: 8px; } @media (max-width: 700px) { .block-container { padding-left: .8rem; padding-right: .8rem; padding-top: .8rem; } .med-hero { padding: 18px; border-radius: 18px; } .med-hero h1 { font-size: 28px; } } </style> """, unsafe_allow_html=True)
+st.markdown(""" <style> .block-container { max-width: 1050px; padding-top: 1.5rem; padding-bottom: 7rem; } #MainMenu {visibility: hidden;} footer {visibility: hidden;} .med-hero { padding: 14px 18px; border: 1px solid rgba(120,120,120,.18); border-radius: 22px; margin-bottom: 18px; background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(120,120,120,.05)); box-shadow: 0 10px 35px rgba(0,0,0,.06); } .med-hero h1 { margin: 0; font-size: clamp(22px, 5vw, 30px); letter-spacing: -1px; } .med-hero p { margin: 4px 0 0; opacity: .72; } .welcome-card { padding: 22px; border-radius: 20px; border: 1px solid rgba(120,120,120,.16); margin: 10px 0 18px; } .welcome-card h3 { margin-top: 0; } .suggestion-title { font-size: 13px; font-weight: 700; opacity: .65; margin: 5px 0 6px; } .suggestion-note { font-size: 12px; opacity: .6; margin-top: 3px; } section[data-testid="stSidebar"] { border-right: 1px solid rgba(120,120,120,.14); } [data-testid="stChatMessage"] { border-radius: 18px; margin-bottom: 8px; } @media (max-width: 700px) { .block-container { padding-left: .8rem; padding-right: .8rem; padding-top: .8rem; } .med-hero { padding: 18px; border-radius: 18px; } .med-hero h1 { font-size: 28px; } } </style> """, unsafe_allow_html=True)
 
 if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = []
@@ -306,14 +315,28 @@ if "chat_messages" not in st.session_state:
 if "selected_medicine" not in st.session_state:
     st.session_state.selected_medicine = "None"
 
+if "input_version" not in st.session_state:
+    st.session_state.input_version = 0
+
+
+# ---------------------------------------------------
+# SIDEBAR
+# ---------------------------------------------------
 with st.sidebar:
     st.markdown("## 💊 Medication AI")
     st.caption("Your medication information assistant")
-if st.button("＋ New Chat", use_container_width=True, key="new_chat"):
-    st.session_state.chat_messages = []
-    st.session_state.selected_medicine = "None"
-    st.session_state.input_version += 1
-    st.rerun()
+
+    st.divider()
+
+    if st.button(
+        "＋ New Chat",
+        use_container_width=True,
+        key="new_chat"
+    ):
+        st.session_state.chat_messages = []
+        st.session_state.selected_medicine = "None"
+        st.session_state.input_version += 1
+        st.rerun()
 
 st.markdown(""" <div class="med-hero"> <h1>💊 Medication AI Assistant</h1> <p>Ask medication questions in English, Roman Urdu, or Urdu — the assistant automatically follows your language.</p> </div> """, unsafe_allow_html=True)
 
@@ -354,8 +377,6 @@ for message in st.session_state.chat_messages:
 # ONE chat-style input
 # Medicine suggestions appear only while typing.
 # ---------------------------------------------------
-if "input_version" not in st.session_state:
-    st.session_state.input_version = 0
 
 question = st.text_input(
     "",
@@ -371,32 +392,48 @@ typed = question.strip().lower()
 suggestions = []
 
 if typed and medicine_names:
-    # First prefer medicine names that are contained in the question.
-    contained = [
-        name for name in medicine_names
-        if name.lower() in typed
-    ]
 
-    # Then support normal autocomplete such as "nap" -> "Naproxen".
-    prefix = [
+    # Medicine names matching the beginning of typed text
+    prefix_matches = [
         name for name in medicine_names
         if name.lower().startswith(typed)
     ]
 
-    suggestions = list(dict.fromkeys(contained + prefix))[:6]
+    # Medicine names appearing anywhere in the question
+    contained_matches = [
+        name for name in medicine_names
+        if typed in name.lower()
+    ]
+
+    # Medicine names appearing inside a full question
+    question_matches = [
+        name for name in medicine_names
+        if name.lower() in typed
+    ]
+
+    suggestions = list(
+        dict.fromkeys(
+            prefix_matches
+            + contained_matches
+            + question_matches
+        )
+    )[:6]
 
 if typed and suggestions:
+
     st.markdown(
-        '<div class="suggestion-title">💊 Medicine suggestions</div>',
+        '<div class="suggestion-title">💊 Suggested medicines</div>',
         unsafe_allow_html=True
     )
 
     cols = st.columns(min(3, len(suggestions)))
 
     for i, medicine in enumerate(suggestions):
+
         with cols[i % len(cols)]:
+
             if st.button(
-                medicine,
+                f"💊 {medicine}",
                 key=f"medicine_suggestion_{i}_{medicine}",
                 use_container_width=True
             ):
