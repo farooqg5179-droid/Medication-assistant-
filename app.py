@@ -517,7 +517,7 @@ if send and question.strip():
 
             # Clear the input and medicine selection after sending.
             st.session_state.selected_medicine = "None"
-st.session_state.input_version += 1
-st.rerun()
+            st.session_state.input_version += 1
+            st.rerun()
         except Exception as e:
             st.error(f"AI response failed: {e}")
