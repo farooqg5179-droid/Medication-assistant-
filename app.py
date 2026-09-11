@@ -932,3 +932,89 @@ If information is unavailable, clearly say:
 
 "Verified information is not available in the current knowledge base."
 """
+            recent_messages = st.session_state.chat_messages[-6:]
+
+            messages = [
+                {
+                    "role": "system",
+                    "content": system_prompt
+                }
+            ]
+
+            for msg in recent_messages:
+                messages.append(
+                    {
+                        "role": msg["role"],
+                        "content": msg["content"]
+                    }
+                )
+
+            messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        f"Knowledge base context:\n{context}\n\n"
+                        f"User question:\n{question}"
+                    )
+                }
+            )
+
+            response = client.chat.completions.create(
+                model="openai/gpt-oss-120b",
+                messages=messages,
+                temperature=0.2,
+                max_tokens=800
+            )
+
+            answer = response.choices[0].message.content
+
+            st.session_state.chat_messages.append(
+                {
+                    "role": "assistant",
+                    "content": answer
+                }
+            )
+
+            with st.chat_message("assistant"):
+                st.markdown(answer)
+
+            if supabase and st.session_state.get("user_id"):
+
+                try:
+
+                    supabase.table(
+                        "medication_chat_messages"
+                    ).insert(
+                        [
+                            {
+                                "user_id": st.session_state.user_id,
+                                "role": "user",
+                                "content": question
+                            },
+                            {
+                                "user_id": st.session_state.user_id,
+                                "role": "assistant",
+                                "content": answer
+                            }
+                        ]
+                    ).execute()
+
+                except Exception as e:
+
+                    st.warning(
+                        f"Chat history could not be saved: {e}"
+                    )
+
+        except Exception as e:
+
+            error_message = f"AI response failed: {e}"
+
+            st.session_state.chat_messages.append(
+                {
+                    "role": "assistant",
+                    "content": error_message
+                }
+            )
+
+            with st.chat_message("assistant"):
+                st.error(error_message)
