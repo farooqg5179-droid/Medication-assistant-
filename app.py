@@ -213,10 +213,36 @@ if supabase and st.session_state.get("user_id"):
 
             try:
 
-                access_token = st.session_state.get(
-                    "access_token"
-                )
+                # ---------------------------------------------------
+                # Get current Supabase session
+                # ---------------------------------------------------
+                session = supabase.auth.get_session()
 
+                access_token = None
+
+                # ---------------------------------------------------
+                # Get JWT from current Supabase session
+                # ---------------------------------------------------
+                if session:
+
+                    if hasattr(session, "access_token"):
+                        access_token = session.access_token
+
+                    elif hasattr(session, "session") and session.session:
+                        access_token = session.session.access_token
+
+                # ---------------------------------------------------
+                # Fallback to Streamlit session
+                # ---------------------------------------------------
+                if not access_token:
+
+                    access_token = st.session_state.get(
+                        "access_token"
+                    )
+
+                # ---------------------------------------------------
+                # Make sure token exists
+                # ---------------------------------------------------
                 if not access_token:
 
                     st.error(
@@ -225,30 +251,62 @@ if supabase and st.session_state.get("user_id"):
 
                 else:
 
+                    # ---------------------------------------------------
+                    # Save latest token in Streamlit session
+                    # ---------------------------------------------------
+                    st.session_state.access_token = access_token
+
+                    # ---------------------------------------------------
+                    # Keep Supabase client authenticated
+                    # ---------------------------------------------------
+                    supabase.postgrest.auth(
+                        access_token
+                    )
+
+                    # ---------------------------------------------------
                     # Call Supabase Edge Function
+                    # ---------------------------------------------------
                     response = supabase.functions.invoke(
                         "delete-account",
                         invoke_options={
                             "headers": {
-                                "Authorization": f"Bearer {access_token}"
+                                "Authorization": (
+                                    f"Bearer {access_token}"
+                                )
                             }
                         }
                     )
 
-                    # Clear local session
-                    for key in [
-                        "user_id",
-                        "user_email",
-                        "access_token",
-                        "delete_account_confirm"
-                    ]:
-                        st.session_state.pop(key, None)
+                    # ---------------------------------------------------
+                    # Check response
+                    # ---------------------------------------------------
+                    if response:
 
-                    st.success(
-                        "Your account and chat history have been deleted."
-                    )
+                        # ---------------------------------------------------
+                        # Clear local session
+                        # ---------------------------------------------------
+                        for key in [
+                            "user_id",
+                            "user_email",
+                            "access_token",
+                            "delete_account_confirm"
+                        ]:
+                            st.session_state.pop(
+                                key,
+                                None
+                            )
 
-                    st.rerun()
+                        st.success(
+                            "Your account and chat history have been deleted."
+                        )
+
+                        st.rerun()
+
+                    else:
+
+                        st.error(
+                            "Account deletion failed. Please try again."
+                        )
 
             except Exception as e:
 
