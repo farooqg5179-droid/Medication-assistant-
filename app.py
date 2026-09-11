@@ -61,61 +61,64 @@ if supabase and "user_id" not in st.session_state:
 
     # ---------------- SIGNUP TAB ----------------
     with tab_signup:
-    with st.form("signup_form"):
-        signup_name = st.text_input("Full Name", key="signup_name")
-        signup_email = st.text_input("Email", key="signup_email")
-        signup_password = st.text_input("Password", type="password", key="signup_password")
+    with tab_signup:
+        with st.form("signup_form"):
+            signup_name = st.text_input("Full Name", key="signup_name")
+            signup_email = st.text_input("Email", key="signup_email")
+            signup_password = st.text_input(
+                "Password", type="password", key="signup_password"
+            )
 
-        with st.expander("📄 Privacy Policy & Medical Disclaimer"):
-            st.markdown("""
-            **Medical Disclaimer:**
-            Yeh app sirf educational/informational purpose ke liye hai. Ye kisi doctor, 
-            pharmacist ya qualified healthcare professional ka replacement nahi hai. 
-            Is app ki AI dwara di gayi information diagnosis, prescription ya treatment 
-            advice nahi hai. Kisi bhi medical decision se pehle apne doctor se mashwara 
-            zaroor karein.
+            with st.expander("📄 Privacy Policy & Medical Disclaimer"):
+                st.markdown("""
+                **Medical Disclaimer:**
+                Yeh app sirf educational/informational purpose ke liye hai. Ye kisi doctor, 
+                pharmacist ya qualified healthcare professional ka replacement nahi hai. 
+                Is app ki AI dwara di gayi information diagnosis, prescription ya treatment 
+                advice nahi hai. Kisi bhi medical decision se pehle apne doctor se mashwara 
+                zaroor karein.
 
-            **Privacy Policy:**
-            - Aapka naam aur email account banane ke liye store kiya jayega.
-            - Aapki chat history (sawal aur AI ke jawab) Supabase database mein save hogi, 
-              taake aap apni purani conversations dekh sakein.
-            - Aapka data kisi third party ke sath share nahi kiya jayega.
-            - Aap kisi bhi waqt apna account aur data delete karne ki request kar sakte hain.
+                **Privacy Policy:**
+                - Aapka naam aur email account banane ke liye store kiya jayega.
+                - Aapki chat history (sawal aur AI ke jawab) Supabase database mein save hogi, 
+                  taake aap apni purani conversations dekh sakein.
+                - Aapka data kisi third party ke sath share nahi kiya jayega.
+                - Aap kisi bhi waqt apna account aur data delete karne ki request kar sakte hain.
 
-            Account banane se aap in terms se agree karte hain.
-            """)
+                Account banane se aap in terms se agree karte hain.
+                """)
 
-        agree_terms = st.checkbox(
-            "Main Privacy Policy aur Medical Disclaimer se agree karta/karti hoon"
-        )
+            agree_terms = st.checkbox(
+                "Main Privacy Policy aur Medical Disclaimer se agree karta/karti hoon"
+            )
 
-        signup_submit = st.form_submit_button("Create Account")
+            signup_submit = st.form_submit_button("Create Account")
 
-    if signup_submit:
-        if not agree_terms:
-            st.error("Account banane ke liye Privacy Policy se agree karna zaroori hai.")
-        else:
-            try:
-                auth_response = supabase.auth.sign_up(
-                    {
-                        "email": signup_email,
-                        "password": signup_password,
-                        "options": {"data": {"full_name": signup_name}},
-                    }
-                )
-                if auth_response.session:
-                    st.session_state.user_id = auth_response.user.id
-                    st.session_state.user_email = auth_response.user.email
-                    st.session_state.access_token = auth_response.session.access_token
-                    st.success("Account created successfully!")
-                    st.rerun()
-                else:
-                    st.success(
-                        "Account created! Please check your email to confirm "
-                        "your account, then log in."
+        if signup_submit:
+            if not agree_terms:
+                st.error("Account banane ke liye Privacy Policy se agree karna zaroori hai.")
+            else:
+                try:
+                    auth_response = supabase.auth.sign_up(
+                        {
+                            "email": signup_email,
+                            "password": signup_password,
+                            "options": {"data": {"full_name": signup_name}},
+                        }
                     )
-            except Exception as e:
-                st.error(f"Sign up failed: {e}")
+                    if auth_response.session:
+                        st.session_state.user_id = auth_response.user.id
+                        st.session_state.user_email = auth_response.user.email
+                        st.session_state.access_token = auth_response.session.access_token
+                        st.success("Account created successfully!")
+                        st.rerun()
+                    else:
+                        st.success(
+                            "Account created! Please check your email to confirm "
+                            "your account, then log in."
+                        )
+                except Exception as e:
+                    st.error(f"Sign up failed: {e}")
 
     # Stop here - do not show the chat UI until logged in
     st.stop()
