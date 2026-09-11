@@ -267,7 +267,7 @@ if supabase and st.session_state.get("user_id"):
                     # Call Supabase Edge Function
                     # ---------------------------------------------------
                     response = supabase.functions.invoke(
-                        "delete-account",
+                        "delete-my-account",
                         invoke_options={
                             "headers": {
                                 "Authorization": (
