@@ -152,7 +152,7 @@ if supabase and st.session_state.get("user_id"):
         # ---------------------------------------------------
         # LOGOUT
         # ---------------------------------------------------
-                if st.button(
+        if st.button(
             "🚪 Logout",
             use_container_width=True
         ):
