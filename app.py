@@ -310,7 +310,7 @@ with st.sidebar:
     st.markdown("## 💊 Medication AI")
     st.caption("Your medication information assistant")
 
-    if st.button("＋ New Chat", use_container_width=True, key="new_chat"):
+        if st.button("＋ New Chat", use_container_width=True, key="new_chat"):
     st.session_state.chat_messages = []
     st.session_state.selected_medicine = "None"
     st.session_state.input_version += 1
