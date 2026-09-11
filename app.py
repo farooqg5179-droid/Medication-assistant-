@@ -355,9 +355,12 @@ for message in st.session_state.chat_messages:
 # ONE chat-style input
 # Medicine suggestions appear only while typing.
 # ---------------------------------------------------
+if "input_version" not in st.session_state:
+    st.session_state.input_version = 0
+
 question = st.text_input(
     "",
-    key="medication_question",
+    key=f"medication_question_{st.session_state.input_version}",
     placeholder="💬 Ask a medication question or type a medicine name…",
     label_visibility="collapsed"
 )
