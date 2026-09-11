@@ -61,7 +61,6 @@ if supabase and "user_id" not in st.session_state:
 
     # ---------------- SIGNUP TAB ----------------
     with tab_signup:
-    with tab_signup:
         with st.form("signup_form"):
             signup_name = st.text_input("Full Name", key="signup_name")
             signup_email = st.text_input("Email", key="signup_email")
@@ -72,15 +71,15 @@ if supabase and "user_id" not in st.session_state:
             with st.expander("📄 Privacy Policy & Medical Disclaimer"):
                 st.markdown("""
                 **Medical Disclaimer:**
-                Yeh app sirf educational/informational purpose ke liye hai. Ye kisi doctor, 
-                pharmacist ya qualified healthcare professional ka replacement nahi hai. 
-                Is app ki AI dwara di gayi information diagnosis, prescription ya treatment 
-                advice nahi hai. Kisi bhi medical decision se pehle apne doctor se mashwara 
+                Yeh app sirf educational/informational purpose ke liye hai. Ye kisi doctor,
+                pharmacist ya qualified healthcare professional ka replacement nahi hai.
+                Is app ki AI dwara di gayi information diagnosis, prescription ya treatment
+                advice nahi hai. Kisi bhi medical decision se pehle apne doctor se mashwara
                 zaroor karein.
 
                 **Privacy Policy:**
                 - Aapka naam aur email account banane ke liye store kiya jayega.
-                - Aapki chat history (sawal aur AI ke jawab) Supabase database mein save hogi, 
+                - Aapki chat history (sawal aur AI ke jawab) Supabase database mein save hogi,
                   taake aap apni purani conversations dekh sakein.
                 - Aapka data kisi third party ke sath share nahi kiya jayega.
                 - Aap kisi bhi waqt apna account aur data delete karne ki request kar sakte hain.
@@ -364,4 +363,5 @@ Selected language: {language}
 
                 st.warning(
                     f"Could not save chat history: {e}"
-    )
+            )
+        
