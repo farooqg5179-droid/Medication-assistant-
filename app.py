@@ -21,20 +21,96 @@ else:
     st.warning("Supabase is not configured. Chat history will not be saved.")
 
 # ---------------------------------------------------
-# Anonymous session
+# Keep the Supabase client authenticated on every rerun
+# (Streamlit reruns the whole script on every interaction)
 # ---------------------------------------------------
-if supabase and "user_id" not in st.session_state:
-    try:
-        auth_response = supabase.auth.sign_in_anonymously()
-        st.session_state.user_id = auth_response.user.id
-        st.session_state.access_token = auth_response.session.access_token
-    except Exception as e:
-        st.session_state.user_id = None
-        st.warning(f"Could not start Supabase session: {e}")
-
-# Har run pr token client ko dobara batao (Streamlit har interaction pr script re-run karta hai)
 if supabase and st.session_state.get("access_token"):
     supabase.postgrest.auth(st.session_state.access_token)
+
+# ---------------------------------------------------
+# LOGIN / SIGNUP SCREEN
+# Shown only if user is not logged in
+# ---------------------------------------------------
+if supabase and "user_id" not in st.session_state:
+
+    st.title("💊 Medication AI Assistant")
+    st.caption("Please log in or create an account to continue.")
+
+    tab_login, tab_signup = st.tabs(["Login", "Sign Up"])
+
+    # ---------------- LOGIN TAB ----------------
+    with tab_login:
+        with st.form("login_form"):
+            login_email = st.text_input("Email", key="login_email")
+            login_password = st.text_input(
+                "Password", type="password", key="login_password"
+            )
+            login_submit = st.form_submit_button("Login")
+
+        if login_submit:
+            try:
+                auth_response = supabase.auth.sign_in_with_password(
+                    {"email": login_email, "password": login_password}
+                )
+                st.session_state.user_id = auth_response.user.id
+                st.session_state.user_email = auth_response.user.email
+                st.session_state.access_token = auth_response.session.access_token
+                st.rerun()
+            except Exception as e:
+                st.error(f"Login failed: {e}")
+
+    # ---------------- SIGNUP TAB ----------------
+    with tab_signup:
+        with st.form("signup_form"):
+            signup_name = st.text_input("Full Name", key="signup_name")
+            signup_email = st.text_input("Email", key="signup_email")
+            signup_password = st.text_input(
+                "Password", type="password", key="signup_password"
+            )
+            signup_submit = st.form_submit_button("Create Account")
+
+        if signup_submit:
+            try:
+                auth_response = supabase.auth.sign_up(
+                    {
+                        "email": signup_email,
+                        "password": signup_password,
+                        "options": {"data": {"full_name": signup_name}},
+                    }
+                )
+                if auth_response.session:
+                    # Email confirmation is OFF -> user is logged in immediately
+                    st.session_state.user_id = auth_response.user.id
+                    st.session_state.user_email = auth_response.user.email
+                    st.session_state.access_token = auth_response.session.access_token
+                    st.success("Account created successfully!")
+                    st.rerun()
+                else:
+                    # Email confirmation is ON -> user must verify email first
+                    st.success(
+                        "Account created! Please check your email to confirm "
+                        "your account, then log in."
+                    )
+            except Exception as e:
+                st.error(f"Sign up failed: {e}")
+
+    # Stop here - do not show the chat UI until logged in
+    st.stop()
+
+# ---------------------------------------------------
+# Sidebar - user info + logout (only shown when logged in)
+# ---------------------------------------------------
+if supabase and st.session_state.get("user_id"):
+    with st.sidebar:
+        st.write(f"👤 Logged in as: **{st.session_state.get('user_email', 'User')}**")
+        if st.button("Logout"):
+            try:
+                supabase.auth.sign_out()
+            except Exception:
+                pass
+            for key in ["user_id", "user_email", "access_token"]:
+                st.session_state.pop(key, None)
+            st.rerun()
 
 # ---------------------------------------------------
 # App title
@@ -262,5 +338,4 @@ Selected language: {language}
 
                 st.warning(
                     f"Could not save chat history: {e}"
-                )
-                
+    )
