@@ -519,4 +519,4 @@ if send and question.strip():
             st.rerun()
 
         except Exception as e:
-            st.error(f"AI response failed: {e}"):
+            st.error(f"AI response failed: {e}")
