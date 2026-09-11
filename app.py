@@ -311,10 +311,10 @@ with st.sidebar:
     st.caption("Your medication information assistant")
 
     if st.button("＋ New Chat", use_container_width=True, key="new_chat"):
-        st.session_state.chat_messages = []
-        st.session_state.selected_medicine = "None"
-        st.session_state.medication_question = ""
-        st.rerun()
+    st.session_state.chat_messages = []
+    st.session_state.selected_medicine = "None"
+    st.session_state.input_version += 1
+    st.rerun()
 
 st.markdown(""" <div class="med-hero"> <h1>💊 Medication AI Assistant</h1> <p>Ask medication questions in English, Roman Urdu, or Urdu — the assistant automatically follows your language.</p> </div> """, unsafe_allow_html=True)
 
@@ -517,9 +517,8 @@ if send and question.strip():
                     st.warning(f"Could not save chat history: {e}")
 
             # Clear the input and medicine selection after sending.
-            st.session_state.medication_question = ""
             st.session_state.selected_medicine = "None"
-            st.rerun()
-
+st.session_state.input_version += 1
+st.rerun()
         except Exception as e:
             st.error(f"AI response failed: {e}")
