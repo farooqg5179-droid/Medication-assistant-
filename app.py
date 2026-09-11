@@ -61,15 +61,40 @@ if supabase and "user_id" not in st.session_state:
 
     # ---------------- SIGNUP TAB ----------------
     with tab_signup:
-        with st.form("signup_form"):
-            signup_name = st.text_input("Full Name", key="signup_name")
-            signup_email = st.text_input("Email", key="signup_email")
-            signup_password = st.text_input(
-                "Password", type="password", key="signup_password"
-            )
-            signup_submit = st.form_submit_button("Create Account")
+    with st.form("signup_form"):
+        signup_name = st.text_input("Full Name", key="signup_name")
+        signup_email = st.text_input("Email", key="signup_email")
+        signup_password = st.text_input("Password", type="password", key="signup_password")
 
-        if signup_submit:
+        with st.expander("📄 Privacy Policy & Medical Disclaimer"):
+            st.markdown("""
+            **Medical Disclaimer:**
+            Yeh app sirf educational/informational purpose ke liye hai. Ye kisi doctor, 
+            pharmacist ya qualified healthcare professional ka replacement nahi hai. 
+            Is app ki AI dwara di gayi information diagnosis, prescription ya treatment 
+            advice nahi hai. Kisi bhi medical decision se pehle apne doctor se mashwara 
+            zaroor karein.
+
+            **Privacy Policy:**
+            - Aapka naam aur email account banane ke liye store kiya jayega.
+            - Aapki chat history (sawal aur AI ke jawab) Supabase database mein save hogi, 
+              taake aap apni purani conversations dekh sakein.
+            - Aapka data kisi third party ke sath share nahi kiya jayega.
+            - Aap kisi bhi waqt apna account aur data delete karne ki request kar sakte hain.
+
+            Account banane se aap in terms se agree karte hain.
+            """)
+
+        agree_terms = st.checkbox(
+            "Main Privacy Policy aur Medical Disclaimer se agree karta/karti hoon"
+        )
+
+        signup_submit = st.form_submit_button("Create Account")
+
+    if signup_submit:
+        if not agree_terms:
+            st.error("Account banane ke liye Privacy Policy se agree karna zaroori hai.")
+        else:
             try:
                 auth_response = supabase.auth.sign_up(
                     {
@@ -79,14 +104,12 @@ if supabase and "user_id" not in st.session_state:
                     }
                 )
                 if auth_response.session:
-                    # Email confirmation is OFF -> user is logged in immediately
                     st.session_state.user_id = auth_response.user.id
                     st.session_state.user_email = auth_response.user.email
                     st.session_state.access_token = auth_response.session.access_token
                     st.success("Account created successfully!")
                     st.rerun()
                 else:
-                    # Email confirmation is ON -> user must verify email first
                     st.success(
                         "Account created! Please check your email to confirm "
                         "your account, then log in."
