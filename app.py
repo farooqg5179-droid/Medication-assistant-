@@ -5,70 +5,282 @@ from groq import Groq
 from supabase import create_client
 from rag.retriever import retrieve_context
 
-st.set_page_config(page_title="Medication AI Assistant", page_icon="💊")
 
-# ---------------------------------------------------
-# Supabase connection setup
-# ---------------------------------------------------
+# =========================================================
+# PAGE CONFIG
+# =========================================================
+
+st.set_page_config(
+    page_title="Medication AI Assistant",
+    page_icon="💊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+
+# =========================================================
+# CUSTOM CSS
+# =========================================================
+
+st.markdown(
+    """
+    <style>
+
+    /* Main page */
+    .stApp {
+        background-color: #ffffff;
+    }
+
+    /* Reduce top spacing */
+    .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 6rem;
+        max-width: 1000px;
+    }
+
+    /* Header */
+    .app-header {
+        text-align: center;
+        padding: 10px 0 20px 0;
+    }
+
+    .app-title {
+        font-size: 30px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .app-subtitle {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    /* Welcome screen */
+    .welcome-box {
+        text-align: center;
+        padding: 45px 20px 30px 20px;
+    }
+
+    .welcome-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+
+    .welcome-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .welcome-text {
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    /* Sidebar */
+    section[data-testid="stSidebar"] {
+        border-right: 1px solid #e5e7eb;
+    }
+
+    /* Chat messages */
+    div[data-testid="stChatMessage"] {
+        padding: 12px 8px;
+        border-radius: 10px;
+    }
+
+    /* Chat input */
+    div[data-testid="stChatInput"] {
+        margin-bottom: 10px;
+    }
+
+    /* Buttons */
+    .stButton > button {
+        border-radius: 8px;
+        min-height: 42px;
+    }
+
+    /* Medicine search */
+    div[data-testid="stSelectbox"] {
+        margin-bottom: 10px;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+
+        .block-container {
+            padding-left: 12px;
+            padding-right: 12px;
+            padding-top: 1rem;
+        }
+
+        .app-title {
+            font-size: 24px;
+        }
+
+        .welcome-title {
+            font-size: 23px;
+        }
+
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+# =========================================================
+# SESSION STATE
+# =========================================================
+
+if "chat_messages" not in st.session_state:
+    st.session_state.chat_messages = []
+
+if "selected_medicine" not in st.session_state:
+    st.session_state.selected_medicine = "None"
+
+
+# =========================================================
+# SUPABASE CONNECTION
+# =========================================================
+
 supabase_url = st.secrets.get("SUPABASE_URL")
 supabase_key = st.secrets.get("SUPABASE_KEY")
 
 supabase = None
 
 if supabase_url and supabase_key:
-    supabase = create_client(supabase_url, supabase_key)
+
+    supabase = create_client(
+        supabase_url,
+        supabase_key
+    )
+
 else:
-    st.warning("Supabase is not configured. Chat history will not be saved.")
 
-# ---------------------------------------------------
-# Keep the Supabase client authenticated on every rerun
-# (Streamlit reruns the whole script on every interaction)
-# ---------------------------------------------------
+    st.warning(
+        "Supabase is not configured. Chat history will not be saved."
+    )
+
+
+# =========================================================
+# KEEP SUPABASE CLIENT AUTHENTICATED
+# =========================================================
+
 if supabase and st.session_state.get("access_token"):
-    supabase.postgrest.auth(st.session_state.access_token)
 
-# ---------------------------------------------------
-# LOGIN / SIGNUP SCREEN
-# Shown only if user is not logged in
-# ---------------------------------------------------
+    supabase.postgrest.auth(
+        st.session_state.access_token
+    )
+
+
+# =========================================================
+# LOGIN / SIGNUP
+# =========================================================
+
 if supabase and "user_id" not in st.session_state:
 
-    st.title("💊 Medication AI Assistant")
-    st.caption("Please log in or create an account to continue.")
+    st.markdown(
+        """
+        <div class="welcome-box">
 
-    tab_login, tab_signup = st.tabs(["Login", "Sign Up"])
+            <div class="welcome-icon">💊</div>
 
-    # ---------------- LOGIN TAB ----------------
+            <div class="welcome-title">
+                Medication AI Assistant
+            </div>
+
+            <div class="welcome-text">
+                Get clear and educational medication information.
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    tab_login, tab_signup = st.tabs(
+        ["🔐 Login", "📝 Sign Up"]
+    )
+
+
+    # =====================================================
+    # LOGIN
+    # =====================================================
+
     with tab_login:
+
         with st.form("login_form"):
-            login_email = st.text_input("Email", key="login_email")
-            login_password = st.text_input(
-                "Password", type="password", key="login_password"
+
+            login_email = st.text_input(
+                "Email",
+                key="login_email"
             )
-            login_submit = st.form_submit_button("Login")
+
+            login_password = st.text_input(
+                "Password",
+                type="password",
+                key="login_password"
+            )
+
+            login_submit = st.form_submit_button(
+                "Login",
+                use_container_width=True
+            )
+
 
         if login_submit:
+
             try:
-                auth_response = supabase.auth.sign_in_with_password(
-                    {"email": login_email, "password": login_password}
+
+                auth_response = (
+                    supabase.auth.sign_in_with_password(
+                        {
+                            "email": login_email,
+                            "password": login_password
+                        }
+                    )
                 )
 
-                st.session_state.user_id = auth_response.user.id
-                st.session_state.user_email = auth_response.user.email
-                st.session_state.access_token = auth_response.session.access_token
+                st.session_state.user_id = (
+                    auth_response.user.id
+                )
+
+                st.session_state.user_email = (
+                    auth_response.user.email
+                )
+
+                st.session_state.access_token = (
+                    auth_response.session.access_token
+                )
+
+                st.session_state.chat_messages = []
 
                 st.rerun()
 
             except Exception as e:
-                st.error(f"Login failed: {e}")
 
-    # ---------------- SIGNUP TAB ----------------
+                st.error(
+                    f"Login failed: {e}"
+                )
+
+
+    # =====================================================
+    # SIGN UP
+    # =====================================================
+
     with tab_signup:
+
         with st.form("signup_form"):
-            signup_name = st.text_input("Full Name", key="signup_name")
+
+            signup_name = st.text_input(
+                "Full Name",
+                key="signup_name"
+            )
 
             signup_email = st.text_input(
-                "Email", key="signup_email"
+                "Email",
+                key="signup_email"
             )
 
             signup_password = st.text_input(
@@ -77,35 +289,47 @@ if supabase and "user_id" not in st.session_state:
                 key="signup_password"
             )
 
-            with st.expander("📄 Privacy Policy & Medical Disclaimer"):
-                st.markdown("""
-                **Medical Disclaimer:**
 
-                Yeh app sirf educational/informational purpose ke liye hai.
-                Ye kisi doctor, pharmacist ya qualified healthcare professional
-                ka replacement nahi hai.
+            with st.expander(
+                "📄 Privacy Policy & Medical Disclaimer"
+            ):
 
-                Is app ki AI dwara di gayi information diagnosis,
-                prescription ya treatment advice nahi hai.
+                st.markdown(
+                    """
+                    **Medical Disclaimer**
 
-                Kisi bhi medical decision se pehle apne doctor se
-                mashwara zaroor karein.
+                    Yeh app sirf educational/informational purpose ke liye hai.
+                    Ye kisi doctor, pharmacist ya qualified healthcare professional
+                    ka replacement nahi hai.
 
-                **Privacy Policy:**
+                    Is app ki AI information diagnosis,
+                    prescription ya treatment advice nahi hai.
 
-                - Aapka naam aur email account banane ke liye store kiya jayega.
-                - Aapki chat history Supabase database mein save hogi.
-                - Aapka data kisi third party ke sath share nahi kiya jayega.
-                - Aap kisi bhi waqt apna account aur data delete kar sakte hain.
+                    Kisi bhi medical decision se pehle apne doctor se
+                    mashwara zaroor karein.
 
-                Account banane se aap in terms se agree karte hain.
-                """)
+                    **Privacy Policy**
+
+                    - Aapka naam aur email account banane ke liye store kiya jayega.
+                    - Aapki chat history Supabase database mein save hogi.
+                    - Aapka data kisi third party ke sath share nahi kiya jayega.
+                    - Aap kisi bhi waqt apna account aur data delete kar sakte hain.
+
+                    Account banane se aap in terms se agree karte hain.
+                    """
+                )
+
 
             agree_terms = st.checkbox(
                 "Main Privacy Policy aur Medical Disclaimer se agree karta/karti hoon"
             )
 
-            signup_submit = st.form_submit_button("Create Account")
+
+            signup_submit = st.form_submit_button(
+                "Create Account",
+                use_container_width=True
+            )
+
 
         if signup_submit:
 
@@ -127,83 +351,152 @@ if supabase and "user_id" not in st.session_state:
                                 "data": {
                                     "full_name": signup_name
                                 }
-                            },
+                            }
                         }
                     )
 
+
                     if auth_response.session:
 
-                        st.session_state.user_id = auth_response.user.id
-                        st.session_state.user_email = auth_response.user.email
-                        st.session_state.access_token = auth_response.session.access_token
+                        st.session_state.user_id = (
+                            auth_response.user.id
+                        )
 
-                        st.success("Account created successfully!")
+                        st.session_state.user_email = (
+                            auth_response.user.email
+                        )
+
+                        st.session_state.access_token = (
+                            auth_response.session.access_token
+                        )
+
+                        st.success(
+                            "Account created successfully!"
+                        )
 
                         st.rerun()
 
                     else:
 
                         st.success(
-                            "Account created! Please check your email to confirm "
-                            "your account, then log in."
+                            "Account created! Please check your email to confirm your account, then log in."
                         )
 
                 except Exception as e:
 
-                    st.error(f"Sign up failed: {e}")
+                    st.error(
+                        f"Sign up failed: {e}"
+                    )
 
-    # Stop here - do not show chat UI until logged in
+
     st.stop()
 
 
-# ---------------------------------------------------
-# Sidebar - user info + logout + delete account
-# ---------------------------------------------------
+# =========================================================
+# SIDEBAR
+# =========================================================
+
 if supabase and st.session_state.get("user_id"):
 
     with st.sidebar:
 
-        st.write(
-            f"👤 Logged in as: "
-            f"**{st.session_state.get('user_email', 'User')}**"
+        st.markdown(
+            "### 💊 Medication AI"
+        )
+
+        st.caption(
+            "Your personal medication information assistant"
         )
 
         st.divider()
 
-        # ---------------------------------------------------
+
+        # =================================================
+        # NEW CHAT
+        # =================================================
+
+        if st.button(
+            "＋ New Chat",
+            use_container_width=True
+        ):
+
+            st.session_state.chat_messages = []
+
+            st.rerun()
+
+
+        st.divider()
+
+
+        # =================================================
+        # USER INFO
+        # =================================================
+
+        st.write(
+            "👤 **Account**"
+        )
+
+        st.caption(
+            st.session_state.get(
+                "user_email",
+                "User"
+            )
+        )
+
+
+        st.divider()
+
+
+        # =================================================
         # LOGOUT
-        # ---------------------------------------------------
+        # =================================================
+
         if st.button(
             "🚪 Logout",
             use_container_width=True
         ):
 
             try:
+
                 supabase.auth.sign_out()
 
             except Exception:
+
                 pass
+
 
             for key in [
                 "user_id",
                 "user_email",
-                "access_token"
+                "access_token",
+                "chat_messages"
             ]:
-                st.session_state.pop(key, None)
+
+                st.session_state.pop(
+                    key,
+                    None
+                )
+
 
             st.rerun()
 
+
         st.divider()
 
-        # ---------------------------------------------------
+
+        # =================================================
         # DELETE ACCOUNT
-        # ---------------------------------------------------
-        st.warning("⚠️ Account Deletion")
+        # =================================================
+
+        st.markdown(
+            "### ⚠️ Account"
+        )
 
         delete_confirm = st.checkbox(
             "I understand that deleting my account is permanent.",
             key="delete_account_confirm"
         )
+
 
         if st.button(
             "🗑️ Delete My Account",
@@ -213,36 +506,41 @@ if supabase and st.session_state.get("user_id"):
 
             try:
 
-                # ---------------------------------------------------
-                # Get current Supabase session
-                # ---------------------------------------------------
                 session = supabase.auth.get_session()
 
                 access_token = None
 
-                # ---------------------------------------------------
-                # Get JWT from current Supabase session
-                # ---------------------------------------------------
+
                 if session:
 
-                    if hasattr(session, "access_token"):
-                        access_token = session.access_token
+                    if hasattr(
+                        session,
+                        "access_token"
+                    ):
 
-                    elif hasattr(session, "session") and session.session:
-                        access_token = session.session.access_token
+                        access_token = (
+                            session.access_token
+                        )
 
-                # ---------------------------------------------------
-                # Fallback to Streamlit session
-                # ---------------------------------------------------
+                    elif (
+                        hasattr(session, "session")
+                        and session.session
+                    ):
+
+                        access_token = (
+                            session.session.access_token
+                        )
+
+
                 if not access_token:
 
-                    access_token = st.session_state.get(
-                        "access_token"
+                    access_token = (
+                        st.session_state.get(
+                            "access_token"
+                        )
                     )
 
-                # ---------------------------------------------------
-                # Make sure token exists
-                # ---------------------------------------------------
+
                 if not access_token:
 
                     st.error(
@@ -251,50 +549,45 @@ if supabase and st.session_state.get("user_id"):
 
                 else:
 
-                    # ---------------------------------------------------
-                    # Save latest token in Streamlit session
-                    # ---------------------------------------------------
-                    st.session_state.access_token = access_token
+                    st.session_state.access_token = (
+                        access_token
+                    )
 
-                    # ---------------------------------------------------
-                    # Keep Supabase client authenticated
-                    # ---------------------------------------------------
+
                     supabase.postgrest.auth(
                         access_token
                     )
 
-                    # ---------------------------------------------------
-                    # Call Supabase Edge Function
-                    # ---------------------------------------------------
-                    response = supabase.functions.invoke(
-                        "delete-my-account",
-                        invoke_options={
-                            "headers": {
-                                "Authorization": (
-                                    f"Bearer {access_token}"
-                                )
+
+                    response = (
+                        supabase.functions.invoke(
+                            "delete-my-account",
+                            invoke_options={
+                                "headers": {
+                                    "Authorization": (
+                                        f"Bearer {access_token}"
+                                    )
+                                }
                             }
-                        }
+                        )
                     )
 
-                    # ---------------------------------------------------
-                    # Check response
-                    # ---------------------------------------------------
+
                     if response:
 
-                        # ---------------------------------------------------
-                        # Clear local session
-                        # ---------------------------------------------------
                         for key in [
                             "user_id",
                             "user_email",
                             "access_token",
-                            "delete_account_confirm"
+                            "delete_account_confirm",
+                            "chat_messages"
                         ]:
+
                             st.session_state.pop(
                                 key,
                                 None
                             )
+
 
                         st.success(
                             "Your account and chat history have been deleted."
@@ -308,6 +601,7 @@ if supabase and st.session_state.get("user_id"):
                             "Account deletion failed. Please try again."
                         )
 
+
             except Exception as e:
 
                 st.error(
@@ -315,66 +609,38 @@ if supabase and st.session_state.get("user_id"):
                 )
 
 
-# ---------------------------------------------------
-# App title
-# ---------------------------------------------------
-st.title("💊 Medication AI Assistant")
+# =========================================================
+# APP HEADER
+# =========================================================
 
-st.caption(
-    "Educational medication information only. "
-    "This AI does not diagnose or prescribe."
+st.markdown(
+    """
+    <div class="app-header">
+
+        <div class="app-title">
+            💊 Medication AI Assistant
+        </div>
+
+        <div class="app-subtitle">
+            Educational medication information powered by AI
+        </div>
+
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
 
-# ---------------------------------------------------
-# Language selection
-# ---------------------------------------------------
-language = st.selectbox(
-    "🌐 Select Language",
-    [
-        "English",
-        "Roman Urdu",
-        "Urdu"
-    ]
-)
+# =========================================================
+# MEDICINE DATABASE
+# =========================================================
 
-
-# ---------------------------------------------------
-# Language instructions
-# ---------------------------------------------------
-if language == "English":
-
-    language_instruction = """
-    Reply only in English.
-    Use simple and clear English.
-    """
-
-elif language == "Roman Urdu":
-
-    language_instruction = """
-    Reply only in Roman Urdu.
-    Use simple Pakistani Roman Urdu that is easy to understand.
-    Do not use Urdu script.
-    Keep medical medicine names in English where appropriate.
-    """
-
-else:
-
-    language_instruction = """
-    Reply only in Urdu.
-    Use clear and simple Urdu script.
-    Keep medicine names in English where appropriate.
-    """
-
-
-# ---------------------------------------------------
-# Medicine Search / Autocomplete
-# ---------------------------------------------------
 KB_PATH = (
     Path(__file__).resolve().parent
     / "knowledge_base"
     / "medications.json"
 )
+
 
 try:
 
@@ -386,229 +652,224 @@ try:
 
         medication_records = json.load(file)
 
+
     medicine_names = sorted(
         {
-            record.get("medicine_name", "").strip()
+            record.get(
+                "medicine_name",
+                ""
+            ).strip()
+
             for record in medication_records
-            if record.get("medicine_name", "").strip()
+
+            if record.get(
+                "medicine_name",
+                ""
+            ).strip()
         }
     )
+
 
 except Exception:
 
     medicine_names = []
 
 
+# =========================================================
+# MEDICINE SEARCH
+# =========================================================
+
 selected_medicine = st.selectbox(
     "🔎 Search Medicine",
     ["None"] + medicine_names,
     index=0,
-    help="Type the first letters of a medicine name to find it quickly."
+    key="medicine_selector",
+    help="Search for a medicine before asking your question."
 )
 
 
-# ---------------------------------------------------
-# User question
-# ---------------------------------------------------
-question = st.text_input(
-    "💬 Ask a medication question"
-)
+# =========================================================
+# WELCOME MESSAGE
+# =========================================================
 
+if not st.session_state.chat_messages:
 
-# Add selected medicine to retrieval query
-retrieval_question = question
+    st.markdown(
+        """
+        <div class="welcome-box">
 
-if question and selected_medicine != "None":
+            <div class="welcome-icon">
+                💊
+            </div>
 
-    retrieval_question = (
-        f"{selected_medicine} {question}"
+            <div class="welcome-title">
+                How can I help you?
+            </div>
+
+            <div class="welcome-text">
+                Ask me about a medicine, its uses, precautions,
+                side effects or other verified information.
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 
+# =========================================================
+# DISPLAY PREVIOUS CHAT
+# =========================================================
+
+for message in st.session_state.chat_messages:
+
+    with st.chat_message(
+        message["role"]
+    ):
+
+        st.markdown(
+            message["content"]
+        )
+
+
+# =========================================================
+# CHAT INPUT
+# =========================================================
+
+question = st.chat_input(
+    "Ask a medication question..."
+)
+
+
+# =========================================================
+# PROCESS USER QUESTION
+# =========================================================
+
 if question:
+
+    # -----------------------------------------------------
+    # Add user message
+    # -----------------------------------------------------
+
+    st.session_state.chat_messages.append(
+        {
+            "role": "user",
+            "content": question
+        }
+    )
+
+
+    # -----------------------------------------------------
+    # Display user message
+    # -----------------------------------------------------
+
+    with st.chat_message("user"):
+
+        st.markdown(question)
+
+
+    # -----------------------------------------------------
+    # Medicine retrieval query
+    # -----------------------------------------------------
+
+    retrieval_question = question
+
+
+    if selected_medicine != "None":
+
+        retrieval_question = (
+            f"{selected_medicine} {question}"
+        )
+
+
+    # -----------------------------------------------------
+    # Groq API
+    # -----------------------------------------------------
 
     api_key = st.secrets.get(
         "GROQ_API_KEY"
     )
 
+
     if not api_key:
 
-        st.error(
+        error_message = (
             "Groq API key is not configured."
         )
 
+        st.session_state.chat_messages.append(
+            {
+                "role": "assistant",
+                "content": error_message
+            }
+        )
+
+        with st.chat_message("assistant"):
+
+            st.error(
+                error_message
+            )
+
+
     else:
 
-        # ---------------------------------------------------
-        # Retrieve knowledge base context
-        # ---------------------------------------------------
-        context = retrieve_context(
-            retrieval_question
-        )
+        try:
 
-        # ---------------------------------------------------
-        # Groq AI
-        # ---------------------------------------------------
-        client = Groq(
-            api_key=api_key
-        )
+            # -------------------------------------------------
+            # Retrieve knowledge base
+            # -------------------------------------------------
 
-        system_prompt = f"""You are a Medication Information Assistant.
+            context = retrieve_context(
+                retrieval_question
+            )
 
-{language_instruction}
 
-CORE RULE:
-Answer exactly what the user asks, but provide a detailed and properly explained answer.
+            # -------------------------------------------------
+            # Groq client
+            # -------------------------------------------------
 
-The user's question determines the scope of your answer. Do not add unrelated medicine information.
+            client = Groq(
+                api_key=api_key
+            )
 
-RESPONSE DETAIL:
-- Give a detailed and well-explained answer.
-- Normally provide 2-5 short paragraphs or 4-8 useful bullet points when the knowledge base supports them.
-- Explain the requested topic clearly with relevant details and useful context.
-- Do not make the answer unnecessarily short.
-- If the user asks a simple question, still provide enough explanation to make the answer useful.
-- Do not repeat the user's question.
-- Use simple and easy-to-understand language.
-- Preserve the selected language.
 
-EXAMPLES:
-- If the user asks "What is paracetamol used for?" → explain its common uses in detail.
-- If the user asks "What are the side effects of paracetamol?" → explain the relevant common side effects clearly.
-- If the user asks "What is paracetamol?" → give a clear and detailed basic explanation.
-- If the user asks about precautions → explain the relevant precautions in detail.
-- If the user asks about warnings → explain the relevant warnings clearly.
-- If the user asks about interactions → provide relevant interactions only when verified information is available.
+            # -------------------------------------------------
+            # Automatic language detection
+            # -------------------------------------------------
 
-DO NOT automatically add:
-- dosage
-- side effects
-- precautions
-- warnings
-- interactions
-- alternatives
-- advantages
-- disadvantages
-- other medicine information
+            system_prompt = """
+You are a Medication Information Assistant.
 
-unless the user specifically asks for them or they are necessary for immediate safety.
+LANGUAGE RULE:
+Automatically detect the language and writing style of the user's latest message.
 
-MEDICAL SAFETY:
-1. Provide general educational information only.
-2. Do not diagnose diseases.
-3. Do not prescribe medicines.
-4. Do not tell users to start, stop, or change prescription medicines.
-5. Do not provide personalized prescription or dosage instructions.
-6. Do not invent medical information.
-7. Use the provided verified knowledge-base context as the primary source.
-8. If the requested information is not present in the knowledge base, clearly say that verified information is not available.
-9. Preserve the medical meaning when responding in the selected language.
-
-EMERGENCY SAFETY:
-If the user's message describes a possible medical emergency, prioritize emergency guidance.
+Reply in the SAME language and writing style used by the user.
 
 Examples:
-- severe chest pain
-- severe difficulty breathing
-- unconsciousness
-- seizure
-- severe allergic reaction
-- suspected overdose or poisoning
-- severe bleeding
-- possible stroke
-- another immediately life-threatening situation
 
-For emergencies:
-1. Clearly state that it may be an emergency.
-2. Advise immediate professional medical help.
-3. For users in Pakistan, advise calling Rescue 1122 or going to the nearest emergency department.
-4. Do not give a long medication explanation before emergency guidance.
+1. User writes:
+"What is paracetamol used for?"
+Reply in simple English.
 
-KNOWLEDGE BASE RULE:
-- Use the provided knowledge-base context as the main source.
-- Do not make up facts that are not supported by the knowledge base.
-- If information is unavailable, clearly say that verified information is not available.
+2. User writes:
+"Paracetamol kis liye use hoti hai?"
+Reply in simple Pakistani Roman Urdu.
 
-Selected language: {language}
-"""
+3. User writes:
+"پیراسیٹامول کس لیے استعمال ہوتی ہے؟"
+Reply in simple Urdu script.
 
-        response = client.chat.completions.create(
+4. If the user naturally mixes English and Roman Urdu,
+reply naturally in the same mixed style.
 
-            model="openai/gpt-oss-120b",
+Do NOT ask the user to select a language.
 
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-                {
-                    "role": "user",
-                    "content": (
-                        f"Knowledge base context: {context}\n\n"
-                        f"User question: {question}"
-                    )
-                }
-            ],
+Do NOT mention language detection.
 
-            temperature=0.2,
-            max_tokens=800
-        )
+MEDICAL RESPONSE RULES:
 
-        answer = (
-            response.choices[0]
-            .message.content
-        )
+Answer exactly what the user asks.
 
+Give a useful and properly explained answer, but do not add unrelated medicine information.
 
-        # ---------------------------------------------------
-        # Display answer
-        # ---------------------------------------------------
-        st.markdown(
-            "### 🤖 AI Assistant"
-        )
-
-        st.markdown(answer)
-
-
-        # ---------------------------------------------------
-        # Retrieved knowledge base
-        # ---------------------------------------------------
-        with st.expander(
-            "🔎 Retrieved Knowledge Base Context"
-        ):
-
-            st.write(context)
-
-
-        # ---------------------------------------------------
-        # Save chat history to Supabase
-        # ---------------------------------------------------
-        if (
-            supabase
-            and st.session_state.get("user_id")
-        ):
-
-            try:
-
-                supabase.table(
-                    "medication_chat_messages"
-                ).insert(
-                    [
-                        {
-                            "user_id": st.session_state.user_id,
-                            "role": "user",
-                            "content": question,
-                        },
-                        {
-                            "user_id": st.session_state.user_id,
-                            "role": "assistant",
-                            "content": answer,
-                        },
-                    ]
-                ).execute()
-
-            except Exception as e:
-
-                st.warning(
-                    f"Could not save chat history: {e}"
-            )
+Normall
