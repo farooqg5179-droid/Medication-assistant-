@@ -445,7 +445,7 @@ if st.session_state.image_result:
                 f"**{matched_record.get('medicine_name', identified_name)}**"
             )
 
-            generic_name = matched_record.get("
+            generic_name = matched_record.get("generic_name", "")
     retrieval_question = user_question
 
     if selected_medicine != "None":
