@@ -495,6 +495,8 @@ if st.session_state.get("user_id"):
             "user",
             user_question,
         )
+    except Exception as e:
+        st.error(f"Message save failed: {e}")
 
                     save_message(
                         "assistant",
