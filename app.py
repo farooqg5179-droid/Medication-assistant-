@@ -38,7 +38,19 @@ if supabase and st.session_state.get("access_token"):
 if supabase and "user_id" not in st.session_state:
 
     st.markdown(
-        """ <style> .login-wrap { max-width: 760px; margin: 7vh auto 0 auto; text-align: center; } .login-title { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; } .login-subtitle { opacity: .68; font-size: 16px; margin-bottom: 25px; } </style> <div class="login-wrap"> <div class="login-title">💊 Medication AI</div> <div class="login-subtitle"> Your safety-focused medication information assistant </div> </div> """,
+        """
+        <style>
+        .login-wrap { max-width: 760px; margin: 7vh auto 0 auto; text-align: center; }
+        .login-title { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; }
+        .login-subtitle { opacity: .68; font-size: 16px; margin-bottom: 25px; }
+        </style>
+        <div class="login-wrap">
+            <div class="login-title">💊 Medication AI</div>
+            <div class="login-subtitle">
+                Your safety-focused medication information assistant
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
@@ -101,7 +113,24 @@ if supabase and "user_id" not in st.session_state:
 
             with st.expander("📄 Privacy Policy & Medical Disclaimer"):
                 st.markdown(
-                    """ **Medical Disclaimer** This app provides educational medication information only. It is not a doctor, pharmacist, diagnosis service, prescription service, or replacement for qualified healthcare advice. **Privacy Policy** - Your name and email are stored for your account. - Your chat history is stored in Supabase. - We do not intentionally share your account/chat data with third parties. - You can request account/data deletion. - Medicine photos are analyzed for the current request and are not intentionally stored by this app. By creating an account, you agree to these terms. """
+                    """
+                    **Medical Disclaimer**
+                    This app provides educational medication information only.
+                    It is not a doctor, pharmacist, diagnosis service,
+                    prescription service, or replacement for qualified
+                    healthcare advice.
+
+                    **Privacy Policy**
+                    - Your name and email are stored for your account.
+                    - Your chat history is stored in Supabase.
+                    - We do not intentionally share your account/chat data
+                      with third parties.
+                    - You can request account/data deletion.
+                    - Medicine photos are analyzed for the current request
+                      and are not intentionally stored by this app.
+
+                    By creating an account, you agree to these terms.
+                    """
                 )
 
             agree_terms = st.checkbox(
@@ -181,7 +210,6 @@ if "image_bytes" not in st.session_state:
 
 if "chat_list" not in st.session_state:
     st.session_state.chat_list = []
-
 
 # =========================================================
 # HELPERS
@@ -296,7 +324,26 @@ def image_to_data_url(image_bytes, mime_type):
 def identify_medicine_from_image(image_bytes, mime_type, client):
     image_url = image_to_data_url(image_bytes, mime_type)
 
-    vision_prompt = """ You are identifying a medicine package or medicine label from a user-provided photo. Your task is ONLY to read visible medicine/package information and identify the medicine name if it is reasonably clear. Rules: - Do not guess a medicine name from an unclear image. - Read visible brand name, generic name, strength, or active ingredient if available. - If the medicine cannot be identified reliably, return UNKNOWN. - Do not provide dosage or treatment advice. - Return ONLY JSON with these keys: medicine_name generic_name confidence visible_text identification_note confidence must be one of: HIGH, MEDIUM, LOW, UNKNOWN. If the image is not a medicine package/label, return UNKNOWN. """
+    vision_prompt = """
+You are identifying a medicine package or medicine label from a user-provided photo.
+Your task is ONLY to read visible medicine/package information and identify the
+medicine name if it is reasonably clear.
+
+Rules:
+- Do not guess a medicine name from an unclear image.
+- Read visible brand name, generic name, strength, or active ingredient if available.
+- If the medicine cannot be identified reliably, return UNKNOWN.
+- Do not provide dosage or treatment advice.
+- Return ONLY JSON with these keys:
+  medicine_name
+  generic_name
+  confidence
+  visible_text
+  identification_note
+
+confidence must be one of: HIGH, MEDIUM, LOW, UNKNOWN.
+If the image is not a medicine package/label, return UNKNOWN.
+"""
 
     response = client.chat.completions.create(
         model="qwen/qwen3.6-27b",
@@ -383,34 +430,7 @@ except Exception:
 
 
 # =========================================================
-# SIDEBAR
-# =========================================================
-with st.sidebar:
-
-    st.markdown(
-    """
-    <div style="padding:4px 0 8px 0;">
-        <div style="font-size:25px;font-weight:800;">💊 Medication AI</div>
-        <div style="opacity:.60;font-size:13px;">
-            Safe • Verified • Educational
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-    )
-
-
-# =========================================================
-# PREMIUM UI
-# =========================================================
-st.markdown(
-    """ <style> #MainMenu {visibility:hidden;} footer {visibility:hidden;} .block-container { max-width: 1120px; padding-top: 1.4rem; padding-bottom: 8rem; } .hero { padding: 24px 26px; border-radius: 26px; border: 1px solid rgba(120,120,120,.16); background: radial-gradient(circle at 90% 10%, rgba(70,130,255,.12), transparent 35%), linear-gradient(135deg, rgba(255,255,255,.08), rgba(120,120,120,.04)); box-shadow: 0 18px 55px rgba(0,0,0,.07); margin-bottom: 20px; } .hero-title { font-size: clamp(27px, 5vw, 42px); font-weight: 850; letter-spacing: -1.8px; line-height: 1.05; margin-bottom: 8px; } .hero-subtitle { opacity: .66; font-size: 15px; max-width: 780px; line-height: 1.55; } .welcome { padding: 28px; border-radius: 24px; border: 1px solid rgba(120,120,120,.14); background: rgba(120,120,120,.035); margin-bottom: 20px; } .welcome h2 { margin: 0 0 8px 0; font-size: 27px; } .welcome p { opacity: .68; margin: 0; } .feature-card { padding: 17px; border-radius: 18px; border: 1px solid rgba(120,120,120,.13); background: rgba(120,120,120,.035); min-height: 110px; } .feature-icon { font-size: 25px; } .feature-title { font-weight: 750; margin-top: 7px; } .feature-text { font-size: 12px; opacity: .62; margin-top: 3px; } .section-title { font-size: 15px; font-weight: 750; margin: 12px 0 8px 0; } [data-testid="stChatMessage"] { border-radius: 20px; margin-bottom: 9px; } section[data-testid="stSidebar"] { border-right: 1px solid rgba(120,120,120,.12); } @media (max-width: 700px) { .block-container { padding-left: .75rem; padding-right: .75rem; padding-top: .8rem; } .hero { padding: 21px; border-radius: 21px; } .welcome { padding: 21px; } } </style> """,
-    unsafe_allow_html=True,
-)
-
-
-# =========================================================
-# LOAD CURRENT CHAT
+# LOAD CURRENT CHAT (once per session/chat switch)
 # =========================================================
 if not st.session_state.chat_loaded:
     existing = load_chat_messages(st.session_state.current_chat_id)
@@ -420,95 +440,382 @@ if not st.session_state.chat_loaded:
 
     st.session_state.chat_loaded = True
 
+if not st.session_state.chat_list:
+    st.session_state.chat_list = load_saved_chats()
+
+
+# =========================================================
+# SIDEBAR
+# =========================================================
+with st.sidebar:
+
+    st.markdown(
+        """
+        <div style="padding:4px 0 8px 0;">
+            <div style="font-size:25px;font-weight:800;">💊 Medication AI</div>
+            <div style="opacity:.60;font-size:13px;">
+                Safe • Verified • Educational
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.write(f"👤 **{get_display_name()}**")
+    st.caption(st.session_state.get("user_email", ""))
+
+    if st.button("➕ New Chat", use_container_width=True):
+        start_new_chat()
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("**Previous Chats**")
+
+    if not st.session_state.chat_list:
+        st.caption("No previous conversations yet.")
+    else:
+        for chat in st.session_state.chat_list:
+            is_active = chat["chat_id"] == st.session_state.current_chat_id
+            label = ("🟢 " if is_active else "") + chat["title"]
+
+            if st.button(label, key=f"chat_{chat['chat_id']}", use_container_width=True):
+                st.session_state.current_chat_id = chat["chat_id"]
+                st.session_state.chat_loaded = False
+                st.session_state.selected_medicine = "None"
+                st.session_state.image_result = None
+                st.session_state.image_bytes = None
+                st.rerun()
+
+    st.markdown("---")
+
+    if st.button("🚪 Logout", use_container_width=True):
+        try:
+            supabase.auth.sign_out()
+        except Exception:
+            pass
+        for key in ["user_id", "user_email", "user_name", "access_token"]:
+            st.session_state.pop(key, None)
+        st.rerun()
+
+    with st.expander("⚠️ Delete Account Data"):
+        st.warning(
+            "This will permanently delete your chat history and profile data."
+        )
+        confirm_delete = st.checkbox("I confirm I want to delete my data.")
+        if st.button("Delete My Data", type="primary", use_container_width=True):
+            if confirm_delete:
+                try:
+                    uid = st.session_state.user_id
+                    supabase.table("medication_chat_messages").delete().eq(
+                        "user_id", uid
+                    ).execute()
+                    supabase.table("profiles").delete().eq("id", uid).execute()
+                    supabase.auth.sign_out()
+                    for key in ["user_id", "user_email", "user_name", "access_token"]:
+                        st.session_state.pop(key, None)
+                    st.success("Your data has been deleted.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Delete failed: {e}")
+            else:
+                st.error("Please tick the confirmation checkbox first.")
+
+# =========================================================
+# PREMIUM UI STYLING
+# =========================================================
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility:hidden;}
+    footer {visibility:hidden;}
+    .block-container {
+        max-width: 1120px;
+        padding-top: 1.4rem;
+        padding-bottom: 8rem;
+    }
+    .hero {
+        padding: 24px 26px;
+        border-radius: 26px;
+        border: 1px solid rgba(120,120,120,.16);
+        background:
+            radial-gradient(circle at 90% 10%, rgba(70,130,255,.12), transparent 35%),
+            linear-gradient(135deg, rgba(255,255,255,.08), rgba(120,120,120,.04));
+        box-shadow: 0 18px 55px rgba(0,0,0,.07);
+        margin-bottom: 20px;
+    }
+    .hero-title {
+        font-size: clamp(27px, 5vw, 42px);
+        font-weight: 850;
+        letter-spacing: -1.8px;
+        line-height: 1.05;
+        margin-bottom: 8px;
+    }
+    .hero-subtitle {
+        opacity: .66;
+        font-size: 15px;
+        max-width: 780px;
+        line-height: 1.55;
+    }
+    [data-testid="stChatMessage"] {
+        border-radius: 20px;
+        margin-bottom: 9px;
+    }
+    section[data-testid="stSidebar"] {
+        border-right: 1px solid rgba(120,120,120,.12);
+    }
+    @media (max-width: 700px) {
+        .block-container {
+            padding-left: .75rem;
+            padding-right: .75rem;
+            padding-top: .8rem;
+        }
+        .hero { padding: 21px; border-radius: 21px; }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 # =========================================================
 # HEADER
 # =========================================================
-display_name = st.session_state.get("user_name", "User") 
-if st.session_state.image_result:
+display_name = get_display_name()
 
-    result = st.session_state.image_result
-    identified_name = (
-        result.get("medicine_name") or ""
-    ).strip()
+st.markdown(
+    f"""
+    <div class="hero">
+        <div class="hero-title">💊 Hi {display_name}, ask me anything about medicines</div>
+        <div class="hero-subtitle">
+            Educational medication information only. This AI does not diagnose
+            or prescribe. For emergencies, always seek immediate medical help.
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-    confidence = (
-        result.get("confidence") or "UNKNOWN"
-    ).upper()
 
-    if identified_name and confidence in ["HIGH", "MEDIUM"]:
+# =========================================================
+# DISPLAY EXISTING CHAT MESSAGES
+# =========================================================
+for msg in st.session_state.chat_messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-        matched_record = find_kb_medicine(
-            identified_name,
-            medication_records,
-        )
 
-        if matched_record:
+# =========================================================
+# MEDICINE PHOTO IDENTIFICATION (optional, before asking)
+# =========================================================
+with st.expander("📷 Identify a medicine from a photo (optional)"):
+    uploaded_file = st.file_uploader(
+        "Upload a photo of the medicine package or label",
+        type=["png", "jpg", "jpeg"],
+        key=f"uploader_{st.session_state.input_version}",
+    )
 
-            st.success(
-                f"💊 Medicine identified: "
-                f"**{matched_record.get('medicine_name', identified_name)}**"
-            )
+    if uploaded_file is not None:
+        st.session_state.image_bytes = uploaded_file.getvalue()
 
-            generic_name = matched_record.get("generic_name", "")
+        if st.button("Identify Medicine"):
+            api_key = st.secrets.get("GROQ_API_KEY")
+
+            if not api_key:
+                st.error("Groq API key is not configured.")
+            else:
+                try:
+                    vision_client = Groq(api_key=api_key)
+                    mime_type = uploaded_file.type or "image/jpeg"
+
+                    result = identify_medicine_from_image(
+                        st.session_state.image_bytes,
+                        mime_type,
+                        vision_client,
+                    )
+                    st.session_state.image_result = result
+
+                except Exception as e:
+                    st.error(f"Could not identify medicine: {e}")
+
+    if st.session_state.image_result:
+        result = st.session_state.image_result
+        identified_name = (result.get("medicine_name") or "").strip()
+        confidence = (result.get("confidence") or "UNKNOWN").upper()
+
+        if identified_name and confidence in ["HIGH", "MEDIUM"]:
+            matched_record = find_kb_medicine(identified_name, medication_records)
+
+            if matched_record:
+                st.success(
+                    f"💊 Medicine identified: "
+                    f"**{matched_record.get('medicine_name', identified_name)}**"
+                )
+                st.session_state.selected_medicine = matched_record.get(
+                    "medicine_name", identified_name
+                )
+            else:
+                st.info(f"Identified as **{identified_name}**, but not found in our knowledge base.")
+                st.session_state.selected_medicine = identified_name
+        else:
+            st.warning("Could not confidently identify the medicine from this photo.")
+
+
+# =========================================================
+# MEDICINE SELECTOR
+# =========================================================
+selected_medicine = st.selectbox(
+    "🔎 Search Medicine (optional)",
+    ["None"] + medicine_names,
+    index=(["None"] + medicine_names).index(st.session_state.selected_medicine)
+    if st.session_state.selected_medicine in (["None"] + medicine_names)
+    else 0,
+    help="Select a medicine to give the assistant extra context for your question.",
+)
+st.session_state.selected_medicine = selected_medicine
+
+
+# =========================================================
+# USER QUESTION INPUT
+# =========================================================
+user_question = st.chat_input("💬 Ask a medication question")
+
+if user_question:
+
+    # Show and store the user's message immediately
+    st.session_state.chat_messages.append(
+        {"role": "user", "content": user_question}
+    )
+    with st.chat_message("user"):
+        st.markdown(user_question)
+
     retrieval_question = user_question
-
     if selected_medicine != "None":
-        retrieval_question = (
-            f"{selected_medicine} {user_question}"
-        )
+        retrieval_question = f"{selected_medicine} {user_question}"
 
     api_key = st.secrets.get("GROQ_API_KEY")
 
     if not api_key:
-
         answer = "Groq API key is not configured."
-        st.error(answer)
+        with st.chat_message("assistant"):
+            st.error(answer)
+        st.session_state.chat_messages.append(
+            {"role": "assistant", "content": answer}
+        )
 
     else:
-
         try:
-
             # -------------------------------------------------
             # Deterministic emergency safety layer
-# -------------------------------------------------
-emergency_terms = [
-    "severe chest pain",
-    "difficulty breathing",
-    "can't breathe",
-    "cannot breathe",
-    "unconscious",
-    "seizure",
-    "severe allergic reaction",
-    "anaphylaxis",
-    "overdose",
-    "poisoning",
-    "severe bleeding",
-    "stroke",
-]
+            # -------------------------------------------------
+            emergency_terms = [
+                "severe chest pain",
+                "difficulty breathing",
+                "can't breathe",
+                "cannot breathe",
+                "unconscious",
+                "seizure",
+                "severe allergic reaction",
+                "anaphylaxis",
+                "overdose",
+                "poisoning",
+                "severe bleeding",
+                "stroke",
+            ]
 
-lower_question = user_question.lower()
+            lower_question = user_question.lower()
+            is_emergency = any(term in lower_question for term in emergency_terms)
 
-if st.session_state.get("user_id"):
-    try:
-        save_message("user", user_question)
-        save_message("assistant", answer)
+            if is_emergency:
+                with st.chat_message("assistant"):
+                    st.error(
+                        "🚨 This may be a medical emergency. Please seek "
+                        "immediate professional medical help. In Pakistan, "
+                        "call **Rescue 1122** or go to the nearest emergency "
+                        "department right away."
+                    )
 
-        # Refresh sidebar chat list
-        st.session_state.chat_list = get_chat_list()
+            # -------------------------------------------------
+            # Retrieve knowledge base context
+            # -------------------------------------------------
+            context = retrieve_context(retrieval_question)
 
-    except Exception as e:
-        st.warning(f"Could not save chat history: {e}")
+            # -------------------------------------------------
+            # Groq AI response
+            # -------------------------------------------------
+            client = Groq(api_key=api_key)
 
-# -------------------------------------------------
-# Reset input for next message
-# -------------------------------------------------
-st.session_state.selected_medicine = "None"
-st.session_state.image_result = None
-st.session_state.image_bytes = None
-st.session_state.input_version += 1
+            system_prompt = """
+You are a Medication Information Assistant.
 
-st.rerun()
+Your responsibilities:
+1. Provide general educational information about medicines.
+2. Do not diagnose diseases.
+3. Do not prescribe medicines.
+4. Do not tell users to start, stop, or change prescription medicines.
+5. Do not provide personalized prescription or dosage instructions.
+6. Do not invent medical information.
+7. Use the provided verified knowledge-base context as the primary source.
+8. If the knowledge base does not contain enough information, clearly say
+   that verified information is not available.
+9. For overdose, poisoning, severe allergic reaction, breathing difficulty,
+   unconsciousness, severe chest pain, or other emergencies, advise the
+   user to seek immediate professional medical help. For users in
+   Pakistan, mention Rescue 1122.
+10. Keep the answer clear, helpful, and easy to understand.
+11. Use simple, easy-to-understand language.
+"""
 
-except Exception as e:
-    st.error(f"AI response failed: {e}")
+            response = client.chat.completions.create(
+                model="openai/gpt-oss-120b",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Knowledge base context:\n{context}\n\n"
+                            f"User question:\n{user_question}"
+                        ),
+                    },
+                ],
+                temperature=0.2,
+                max_tokens=800,
+            )
+
+            answer = response.choices[0].message.content
+
+            with st.chat_message("assistant"):
+                st.markdown(answer)
+                with st.expander("🔎 Retrieved Knowledge Base Context"):
+                    st.write(context)
+
+            st.session_state.chat_messages.append(
+                {"role": "assistant", "content": answer}
+            )
+
+            # -------------------------------------------------
+            # Save chat history to Supabase
+            # -------------------------------------------------
+            if st.session_state.get("user_id"):
+                try:
+                    save_message("user", user_question)
+                    save_message("assistant", answer)
+
+                    # Refresh sidebar chat list
+                    st.session_state.chat_list = load_saved_chats()
+
+                except Exception as e:
+                    st.warning(f"Could not save chat history: {e}")
+
+            # -------------------------------------------------
+            # Reset inputs for next message
+            # -------------------------------------------------
+            st.session_state.selected_medicine = "None"
+            st.session_state.image_result = None
+            st.session_state.image_bytes = None
+            st.session_state.input_version += 1
+
+            st.rerun()
+
+        except Exception as e:
+            st.error(f"AI response failed: {e}")
+    
