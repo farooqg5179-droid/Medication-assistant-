@@ -484,6 +484,10 @@ if st.session_state.image_result:
                 "overdose",
                 "poisoning",
                 "severe bleeding",
+                "stroke",
+            ]
+
+            lower_question = user_question.lower()
                 st.session_state.get("user_id"):
 
                 try:
