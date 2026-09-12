@@ -424,7 +424,7 @@ if not st.session_state.chat_loaded:
 # =========================================================
 # HEADER
 # =========================================================
-display_name = 
+display_name = st.session_state.get("user_name", "User") 
 if st.session_state.image_result:
 
     result = st.session_state.image_result
