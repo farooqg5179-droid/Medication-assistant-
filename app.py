@@ -488,13 +488,13 @@ if st.session_state.image_result:
             ]
 
             lower_question = user_question.lower()
-                st.session_state.get("user_id"):
 
-                try:
-                    save_message(
-                        "user",
-                        user_question,
-                    )
+if st.session_state.get("user_id"):
+    try:
+        save_message(
+            "user",
+            user_question,
+        )
 
                     save_message(
                         "assistant",
