@@ -391,8 +391,8 @@ with st.sidebar:
         """ <div style="padding:4px 0 8px 0;"> <div style="font-size:25px;font-weight:800;">💊 Medication AI</div> <div style="opacity:.60;font-size:13px;"> Safe • Verified • Educational </div> </div> """,
                             st.error("Account deletion failed. Please try again.")
 
-        except Exception as e:
-            st.error(f"Account deletion failed: {e}")
+except Exception as e:
+    st.error(f"Account deletion failed: {e}")
 
 
 # =========================================================
