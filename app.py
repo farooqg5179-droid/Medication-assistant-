@@ -563,6 +563,11 @@ st.markdown(
     section[data-testid="stSidebar"] {
         border-right: 1px solid rgba(120,120,120,.12);
     }
+    .toolbar-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
     @media (max-width: 700px) {
         .block-container {
             padding-left: .75rem;
@@ -605,87 +610,140 @@ for msg in st.session_state.chat_messages:
 
 
 # =========================================================
-# MEDICINE PHOTO IDENTIFICATION (optional, before asking)
+# COMPACT TOOLBAR (icon-only) — medicine picker + camera
+# Sits right above the chat input, keeps the UI clean.
 # =========================================================
-with st.expander("📷 Identify a medicine from a photo (optional)"):
-    uploaded_file = st.file_uploader(
-        "Upload a photo of the medicine package or label",
-        type=["png", "jpg", "jpeg"],
-        key=f"uploader_{st.session_state.input_version}",
-    )
+toolbar_col1, toolbar_col2, toolbar_col3 = st.columns([1, 1, 6])
 
-    if uploaded_file is not None:
-        st.session_state.image_bytes = uploaded_file.getvalue()
+with toolbar_col1:
+    with st.popover("💊", use_container_width=True):
+        st.caption("Select a medicine (optional)")
+        selected_medicine = st.selectbox(
+            "Medicine",
+            ["None"] + medicine_names,
+            index=(["None"] + medicine_names).index(st.session_state.selected_medicine)
+            if st.session_state.selected_medicine in (["None"] + medicine_names)
+            else 0,
+            label_visibility="collapsed",
+        )
+        st.session_state.selected_medicine = selected_medicine
 
-        if st.button("Identify Medicine"):
-            api_key = st.secrets.get("GROQ_API_KEY")
+        if selected_medicine != "None":
+            st.success(f"Using: {selected_medicine}")
 
-            if not api_key:
-                st.error("Groq API key is not configured.")
+with toolbar_col2:
+    with st.popover("📷", use_container_width=True):
+        st.caption("Take a photo of the medicine")
+        camera_photo = st.camera_input(
+            "Camera",
+            key=f"camera_{st.session_state.input_version}",
+            label_visibility="collapsed",
+        )
+
+        if camera_photo is not None:
+            st.session_state.image_bytes = camera_photo.getvalue()
+
+            if st.button("Identify Medicine", key="identify_camera"):
+                api_key = st.secrets.get("GROQ_API_KEY")
+                if not api_key:
+                    st.error("Groq API key is not configured.")
+                else:
+                    try:
+                        vision_client = Groq(api_key=api_key)
+                        result = identify_medicine_from_image(
+                            st.session_state.image_bytes,
+                            "image/jpeg",
+                            vision_client,
+                        )
+                        st.session_state.image_result = result
+                    except Exception as e:
+                        st.error(f"Could not identify medicine: {e}")
+
+        if st.session_state.image_result:
+            result = st.session_state.image_result
+            identified_name = (result.get("medicine_name") or "").strip()
+            confidence = (result.get("confidence") or "UNKNOWN").upper()
+
+            if identified_name and confidence in ["HIGH", "MEDIUM"]:
+                matched_record = find_kb_medicine(identified_name, medication_records)
+                final_name = matched_record.get("medicine_name", identified_name) if matched_record else identified_name
+                st.success(f"Identified: **{final_name}**")
+                st.session_state.selected_medicine = final_name
             else:
-                try:
-                    vision_client = Groq(api_key=api_key)
-                    mime_type = uploaded_file.type or "image/jpeg"
+                st.warning("Could not confidently identify the medicine.")
 
-                    result = identify_medicine_from_image(
-                        st.session_state.image_bytes,
-                        mime_type,
-                        vision_client,
+with toolbar_col3:
+    if st.session_state.selected_medicine != "None":
+        st.caption(f"💊 Context: **{st.session_state.selected_medicine}**  ·  "
+                    f"[clear]"
                     )
-                    st.session_state.image_result = result
-
-                except Exception as e:
-                    st.error(f"Could not identify medicine: {e}")
-
-    if st.session_state.image_result:
-        result = st.session_state.image_result
-        identified_name = (result.get("medicine_name") or "").strip()
-        confidence = (result.get("confidence") or "UNKNOWN").upper()
-
-        if identified_name and confidence in ["HIGH", "MEDIUM"]:
-            matched_record = find_kb_medicine(identified_name, medication_records)
-
-            if matched_record:
-                st.success(
-                    f"💊 Medicine identified: "
-                    f"**{matched_record.get('medicine_name', identified_name)}**"
-                )
-                st.session_state.selected_medicine = matched_record.get(
-                    "medicine_name", identified_name
-                )
-            else:
-                st.info(f"Identified as **{identified_name}**, but not found in our knowledge base.")
-                st.session_state.selected_medicine = identified_name
-        else:
-            st.warning("Could not confidently identify the medicine from this photo.")
 
 
 # =========================================================
-# MEDICINE SELECTOR
+# USER QUESTION INPUT (with attach icon built into the chat box)
 # =========================================================
-selected_medicine = st.selectbox(
-    "🔎 Search Medicine (optional)",
-    ["None"] + medicine_names,
-    index=(["None"] + medicine_names).index(st.session_state.selected_medicine)
-    if st.session_state.selected_medicine in (["None"] + medicine_names)
-    else 0,
-    help="Select a medicine to give the assistant extra context for your question.",
+chat_submission = st.chat_input(
+    "Ask a medication question",
+    accept_file=True,
+    file_type=["png", "jpg", "jpeg"],
+    key=f"chat_input_{st.session_state.input_version}",
 )
-st.session_state.selected_medicine = selected_medicine
 
+user_question = None
+attached_file = None
 
-# =========================================================
-# USER QUESTION INPUT
-# =========================================================
-user_question = st.chat_input("💬 Ask a medication question")
+if chat_submission:
+    if hasattr(chat_submission, "text"):
+        user_question = (chat_submission.text or "").strip()
+        if chat_submission.files:
+            attached_file = chat_submission.files[0]
+    else:
+        # Fallback for older Streamlit versions without file attach support
+        user_question = str(chat_submission).strip()
+
+# If the user only attached a photo with no typed question, default to asking about it
+if attached_file and not user_question:
+    user_question = "What is this medicine and what is it used for?"
+
+selected_medicine = st.session_state.selected_medicine
 
 if user_question:
 
+    # ---------------------------------------------------
+    # If a photo was attached directly in the chat box,
+    # identify it before answering
+    # ---------------------------------------------------
+    if attached_file is not None:
+        api_key = st.secrets.get("GROQ_API_KEY")
+        if api_key:
+            try:
+                image_bytes = attached_file.getvalue()
+                mime_type = attached_file.type or "image/jpeg"
+                vision_client = Groq(api_key=api_key)
+                result = identify_medicine_from_image(image_bytes, mime_type, vision_client)
+
+                identified_name = (result.get("medicine_name") or "").strip()
+                confidence = (result.get("confidence") or "UNKNOWN").upper()
+
+                if identified_name and confidence in ["HIGH", "MEDIUM"]:
+                    matched_record = find_kb_medicine(identified_name, medication_records)
+                    final_name = matched_record.get("medicine_name", identified_name) if matched_record else identified_name
+                    selected_medicine = final_name
+                    st.session_state.selected_medicine = final_name
+            except Exception:
+                pass
+
     # Show and store the user's message immediately
+    display_question = user_question
+    if attached_file is not None:
+        display_question = f"📷 {user_question}"
+
     st.session_state.chat_messages.append(
-        {"role": "user", "content": user_question}
+        {"role": "user", "content": display_question}
     )
     with st.chat_message("user"):
+        if attached_file is not None:
+            st.image(attached_file, width=180)
         st.markdown(user_question)
 
     retrieval_question = user_question
@@ -797,7 +855,7 @@ Your responsibilities:
             # -------------------------------------------------
             if st.session_state.get("user_id"):
                 try:
-                    save_message("user", user_question)
+                    save_message("user", display_question)
                     save_message("assistant", answer)
 
                     # Refresh sidebar chat list
@@ -818,4 +876,3 @@ Your responsibilities:
 
         except Exception as e:
             st.error(f"AI response failed: {e}")
-    
