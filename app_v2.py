@@ -490,8 +490,7 @@ with st.sidebar:
                 if st.session_state.selected_medicine in options
                 else 0
             ),
-            label_visibility="collapsed",
-        )
+            label_visibility="collapsed",)
         st.session_state.selected_medicine = selected_medicine
 
         if selected_medicine != "None":
