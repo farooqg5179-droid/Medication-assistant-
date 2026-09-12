@@ -97,7 +97,7 @@ with st.sidebar:
     st.caption("Location is optional. Your device location is requested only after you choose to allow it. We do not continuously track you.")
 
     if streamlit_geolocation is not None:
-        location_data = streamlit_geolocation(key="medication_ai_location")
+        location_data = streamlit_geolocation()
         if location_data and location_data.get("latitude") is not None:
             st.session_state["device_location"] = {
                 "latitude": location_data.get("latitude"),
