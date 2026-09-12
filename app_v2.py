@@ -197,116 +197,7 @@ def load_saved_chats():
 
 
 def load_chat_messages(chat_id):
-    if not supabase or not st.session_state.get("user_id"):
-        return []
-    try:
-        response = (
-            supabase.table("medication_chat_messages")
-            .select("role, content, created_at")
-            .eq("user_id", st.session_state.user_id)
-            .eq("conversation_id", chat_id)
-            .order("created_at", desc=False)
-            .limit(200)
-            .execute()
-        )
-        return [
-            {"role": row.get("role"), "content": row.get("content")}
-            for row in (response.data or [])
-            if row.get("role") in ["user", "assistant"]
-        ]
-    except Exception:
-        return []
-
-
-def start_new_chat():
-    st.session_state.current_chat_id = str(uuid.uuid4())
-    st.session_state.chat_messages = []
-    st.session_state.chat_loaded = True
-    st.session_state.selected_medicine = "None"
-    st.session_state.image_result = None
-    st.session_state.image_bytes = None
-    st.session_state.screening_active = False
-    st.session_state.screening_started = False
-    st.session_state.screening_answers = {}
-    st.session_state.input_version += 1
-
-
-def save_message(role, content):
-    if not supabase or not st.session_state.get("user_id"):
-        return
-    supabase.table("medication_chat_messages").insert(
-        {
-            "user_id": st.session_state.user_id,
-            "conversation_id": st.session_state.current_chat_id,
-            "role": role,
-            "content": content,
-        }
-    ).execute()
-
-
-def image_to_data_url(image_bytes, mime_type):
-    encoded = base64.b64encode(image_bytes).decode("utf-8")
-    return f"data:{mime_type};base64,{encoded}"
-
-
-def extract_json_object(raw_text):
-    """Safely extract JSON without requiring Groq JSON mode."""
-    if not raw_text:
-        raise ValueError("Vision model returned an empty response.")
-
-    text = raw_text.strip()
-    if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.I)
-        text = re.sub(r"\s*```$", "", text)
-
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        match = re.search(r"\{.*\}", text, flags=re.S)
-        if not match:
-            raise ValueError("Could not find valid JSON in the vision response.")
-        return json.loads(match.group(0))
-
-
-def identify_medicines_from_image(image_bytes, mime_type, client):
-    image_url = image_to_data_url(image_bytes, mime_type)
-
-    vision_prompt = """ You are a medicine-label verification assistant. Read only information that is visibly present in the image. The image may contain: 1) a medicine box/blister/bottle, or 2) a doctor's handwritten/printed prescription or medicine list. Do NOT diagnose, prescribe, or give dosage instructions. Return ONLY one JSON object with exactly these keys: { "document_type": "medicine_package" | "prescription" | "unknown", "medicines": [ { "medicine_name": "string", "generic_name": "string", "strength": "string", "visible_text": "string", "confidence": "HIGH" | "MEDIUM" | "LOW" } ], "note": "short string" } Rules: - Never guess a medicine name when the image is unclear. - If handwriting is unclear, use LOW confidence or leave the medicine out. - Do not invent missing strength or dosage. - If no medicine can be reliably read, return an empty medicines list. """
-
-    response = client.chat.completions.create(
-        model="qwen/qwen3.6-27b",
-        messages=[
-            {"role": "system", "content": vision_prompt},
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": "Read and verify the medicine names visible in this image.",
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": image_url},
-                    },
-                ],
-            },
-        ],
-        temperature=0,
-        max_completion_tokens=700,
-    )
-
-    raw = response.choices[0].message.content
-    return extract_json_object(raw)
-
-
-def find_kb_medicine(medicine_name, medicine_records):
-    if not medicine_name:
-        return None
-
-    target = medicine_name.strip().lower()
-
-    for record in medicine_records:
-        name = record.get("medicine_name", "").strip().lower()
+    if not supabase or not st.session_state."").strip().lower()
         generic = record.get("generic_name", "").strip().lower()
         aliases = [
             str(x).strip().lower()
@@ -337,7 +228,7 @@ def medicine_details_text(record):
     if record.get("medicine_name"):
         parts.append(f"**{record['medicine_name']}**")
     if record.get("generic_name"):
-        parts.append(f"Generic: {record['generic_name']}")
+        parts.append(f"Generic: {record['generic_name']}")v
     if record.get("common_uses"):
         parts.append(f"Uses: {record['common_uses']}")
     if record.get("common_side_effects"):
@@ -359,102 +250,7 @@ def run_image_verification(image_bytes, mime_type):
         raise ValueError("Groq API key is not configured.")
 
     client = Groq(api_key=api_key)
-    return identify_medicines_from_image(image_bytes, mime_type, client)
-
-
-def render_verified_image_result(result, medication_records):
-    medicines = result.get("medicines") or []
-
-    if not medicines:
-        st.warning(
-            "Medicine could not be read clearly. Please upload a clearer photo, "
-            "especially the medicine name/label."
-        )
-        return
-
-    matched_count = 0
-    for item in medicines:
-        name = (item.get("medicine_name") or "").strip()
-        confidence = (item.get("confidence") or "UNKNOWN").upper()
-
-        if not name or confidence == "LOW":
-            st.warning(
-                f"⚠️ Could not reliably read one medicine name. "
-                f"Please verify it manually."
-            )
-            continue
-
-        record = find_kb_medicine(name, medication_records)
-
-        if not record:
-            st.info(
-                f"**{name}** was read from the image, but it is not present in "
-                "the verified medication knowledge base. I will not invent details."
-            )
-            continue
-
-        matched_count += 1
-        st.success(f"Verified in knowledge base: **{record.get('medicine_name')}**")
-        st.markdown(medicine_details_text(record))
-
-        if item.get("strength"):
-            st.caption(f"Strength visible in image: {item['strength']}")
-
-    if matched_count == 0:
-        st.warning(
-            "The medicine name was readable, but no matching verified record was found."
-        )
-
-
-# =========================================================
-# KNOWLEDGE BASE
-# =========================================================
-KB_PATH = Path(__file__).resolve().parent / "knowledge_base" / "medications.json"
-
-try:
-    with open(KB_PATH, "r", encoding="utf-8") as file:
-        medication_records = json.load(file)
-
-    medicine_names = sorted(
-        {
-            record.get("medicine_name", "").strip()
-            for record in medication_records
-            if record.get("medicine_name", "").strip()
-        }
-    )
-except Exception as e:
-    medication_records = []
-    medicine_names = []
-    st.warning(f"Medication knowledge base could not be loaded: {e}")
-
-# =========================================================
-# LOAD CHAT
-# =========================================================
-if not st.session_state.chat_loaded:
-    existing = load_chat_messages(st.session_state.current_chat_id)
-    if existing:
-        st.session_state.chat_messages = existing
-    st.session_state.chat_loaded = True
-
-if not st.session_state.chat_list:
-    st.session_state.chat_list = load_saved_chats()
-
-# =========================================================
-# CLEAN PROFESSIONAL UI
-# =========================================================
-st.markdown(
-    """ <style> #MainMenu {visibility:hidden;} footer {visibility:hidden;} .block-container { max-width: 900px; padding-top: .8rem; padding-bottom: 7rem; padding-left: 1rem; padding-right: 1rem; } .app-top { text-align:center; margin: 2px 0 14px 0; } .app-title { font-size: 26px; font-weight: 800; letter-spacing: -0.8px; line-height: 1.1; } .app-greeting { margin-top: 5px; font-size: 13px; opacity: .58; } [data-testid="stChatMessage"] { border-radius: 18px; margin-bottom: 8px; } [data-testid="stChatMessageContent"] { font-size: 15px; line-height: 1.55; } .tool-hint { text-align:center; font-size:12px; opacity:.48; margin: 3px 0 5px; } .verified-card { border: 1px solid rgba(120,120,120,.18); border-radius: 16px; padding: 14px 16px; margin: 8px 0; } section[data-testid="stSidebar"] { border-right: 1px solid rgba(120,120,120,.12); } @media (max-width:700px) { .block-container { padding-left:.65rem; padding-right:.65rem; padding-top:.45rem; } .app-title {font-size:22px;} [data-testid="stChatMessageContent"] {font-size:14px;} } </style> """,
-    unsafe_allow_html=True,
-)
-
-# =========================================================
-# SIDEBAR
-# =========================================================
-with st.sidebar:
-    st.markdown("### 💊 Medication AI")
-    st.caption("Verified • Educational • Safety-focused")
-    st.markdown(f"**{get_display_name()}**")
-    st.caption(st.session_state.get("user_email", ""))
+    return identify_medicines_from_image(image_bytes, mime_type, , ""))
 
     if st.button("➕ New Chat", use_container_width=True):
         start_new_chat()
@@ -484,13 +280,132 @@ with st.sidebar:
                 st.session_state.image_bytes = None
                 st.session_state.screening_active = False
                 st.session_state.screening_started = False
+                st.session_state.screening_answers = {}
+                st.rerun()
+
+    st.markdown("---")
+
+    if st.button("🚪 Logout", use_container_width=True):
+        try:
+            supabase.auth.sign_out()
+        except Exception:
+            pass
+        for key in ["user_id", "user_email", "user_name", "access_token"]:
+            st.session_state.pop(key, None)
+        st.rerun()
+
+    with st.expander("⚠️ Delete Account Data"):
+        st.warning(
+            "This deletes your stored chat/profile data from the tables used by this app."
+        )
+        confirm_delete = st.checkbox("I confirm I want to delete my data.")
+        if st.button("Delete My Data", type="primary", use_container_width=True):
+            if not confirm_delete:
+                st.error("Please tick the confirmation checkbox first.")
+            else:
+                try:
+                    uid = st.session_state.user_id
+                    supabase.table("medication_chat_messages").delete().eq(
+                        "user_id", uid
+                    ).execute()
+                    supabase.table("profiles").delete().eq("id", uid).execute()
+                    supabase.auth.sign_out()
+                    for key in [
+                        "user_id",
+                        "user_email",
+                        "user_name",
+                        "access_token",
+                    ]:
+                        st.session_state.pop(key, None)
+                    st.success("Your stored app data has been deleted.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Delete failed: {e}")
+
+# =========================================================
+# HEADER
+# =========================================================
+display_name = get_display_name()
+
+st.markdown(
+    f""" <div class="app-top"> <div class="app-title">💊 Medication AI</div> <div class="app-greeting">Hi {display_name} · Ask about a medicine or describe your symptoms</div> </div> """,
+    unsafe_allow_html=True,
+)
+
+# =========================================================
+# EXISTING CHAT
+# =========================================================
+for msg in st.session_state.chat_messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# =========================================================
+# ATTACHMENT / MEDICINE TOOL ROW
+# =========================================================
+st.markdown(
+    '<div class="tool-hint">＋ Camera or medicine/photo tools are available below</div>',
+    unsafe_allow_html=True,
+)
+
+tool1, tool2 = st.columns([1, 1])
+
+with tool1:
+    with st.popover("＋ Medicine / Camera", use_container_width=True):
+        st.caption("Upload a medicine photo or a doctor's prescription photo.")
+
+        camera_photo = st.camera_input(
+            "Take photo",
+            key=f"camera_{st.session_state.input_version}",
+        )
+
+        uploaded_photo = st.file_uploader(
+            "Upload photo",
+            type=["png", "jpg", "jpeg"],
+            key=f"photo_{st.session_state.input_version}",
+        )
+
+        photo_to_verify = camera_photo or uploaded_photo
+
+        if photo_to_verify is not None:
+            st.image(photo_to_verify, use_container_width=True)
+
+            if st.button(
+                "🔎 Verify Medicine",
+                key=f"verify_{st.session_state.input_version}",
+                use_container_width=True,
+            ):
+                try:
+                    result = run_image_verification(
+                        photo_to_verify.getvalue(),
+                        photo_to_verify.type or "image/jpeg",
+                    )
+                    st.session_state.image_result = result
+                    st.session_state.image_bytes = photo_to_verify.getvalue()
+                    st.success("Image checked.")
+                except Exception as e:
+                    st.error(f"Could not verify image: {e}")
+
+        if st.session_state.image_result:
+            render_verified_image_result(
+                st.session_state.image_result,
+                medication_records,
+            )
+
+with tool2:
+    with st.popover("💊 Medicine", use_container_width=True):
+        st.caption("Optional medicine context")
+        options = ["None"] + medicine_names
+
+        selected_medicine = st.selectbox(
+            "Medicine",
             options,
             index=(
                 options.index(st.session_state.selected_medicine)
                 if st.session_state.selected_medicine in options
                 else 0
             ),
-            label_visibility="collapsed",)
+            label_visibility="collapsed",
+        )
         st.session_state.selected_medicine = selected_medicine
 
         if selected_medicine != "None":
@@ -522,10 +437,43 @@ if chat_submission:
 if attached_file and not user_question:
     user_question = (
         "Please identify the medicine(s) in this image and explain what each "
-        "verified -----------------------
-                # Screening-first medical assistant
-                # -------------------------------------------------
-                system_prompt = """ You are Medication AI, a safety-focused medication INFORMATION assistant. Your job is NOT to diagnose or prescribe. IMPORTANT WORKFLOW: When a user describes symptoms and asks what medicine to use, do NOT immediately give a medicine recommendation. First ask the minimum relevant screening questions needed to make the educational information safer. Ask only relevant questions, not a giant questionnaire. For headache, consider asking: - When did it start? - Whole head or one side? - How severe is it? - Any vomiting, vision change, weakness, fainting, neck stiffness, or injury? For fever/flu: - How long? - Temperature if measured? - Cough, sore throat, body aches, breathing difficulty? For stomach problems: - Is it acidity/heartburn, diarrhea, vomiting, or abdominal pain? - When did it start? - Any blood, black stool, severe pain, dehydration, or repeated vomiting? For runny/dry nose: - Is the nose dry, blocked, or watery? - Any nose bleeding? - How long? For any person who may be pregnant: - Ask whether pregnancy is possible or confirmed before discussing medicine information that could be affected by pregnancy. When relevant, ask about: - age - medicine allergies - heart disease - kidney/liver disease - current medicines - pregnancy/breastfeeding If the user's answers already cover the relevant safety questions, do not keep asking unnecessary questions. AFTER SCREENING: Only then provide general educational medicine information based on the VERIFIED KNOWLEDGE BASE supplied in the prompt. Rules: 1. Never invent a medicine or medical fact. 2. Never diagnose the user's condition. 3. Never write a personalized prescription. 4. Never tell the user to take a personalized dose such as "half tablet", "one tablet morning/evening", or a personalized schedule. 5. Do not tell the user to start, stop, or change prescription medicine. 6. If a medicine appears in the verified KB, explain its documented uses, common side effects, precautions, serious warnings, and source when useful. 7. If a medicine is not in the verified KB, say that verified information is not available instead of guessing. 8. Do not assume that multiple symptoms require multiple medicines. 9. Do not recommend antibiotics for ordinary cold/flu symptoms. 10. If the user uploads a doctor's prescription, help READ/VERIFY the medicine names against the verified KB and explain what those medicines are generally used for. Do not replace the doctor's instructions. 11. If the image is unclear, say it is unclear and ask for a clearer photo. 12. Match the user's language automatically: English, Urdu script, Pakistani Roman Urdu, or mixed language. 13. Keep responses clean, short, and easy to read. 14. For serious warning signs, advise urgent medical care. In Pakistan mention Rescue 1122. The supplied knowledge-base context is the primary source. Do not use outside medical facts when the KB does not support them. """
+        "verified medicine is generally used for."
+    )
+
+selected_medicine = st.session_state.selected_medicine
+
+# =========================================================
+# CHAT PROCESSING
+# =========================================================
+if user_question:
+    # -----------------------------------------------------
+    # Image attached directly to chat input
+    # -----------------------------------------------------
+    if attached_file is not None:
+        try:
+            result = run_image_verification(
+                attached_file.getvalue(),
+                attached_file.type or "image/jpeg",
+            )
+            st.session_state.image_result = result
+        except Exception as e:
+            st.session_state.image_result = None
+            st.warning(f"Image verification failed: {e}")
+
+    display_question = user_question
+    if attached_file is not None:
+        display_question = f"📷 {user_question}"
+
+    st.session_state.chat_messages.append(
+        {"role": "user", "content": display_question}
+    )
+
+    with st.chat_message("user"):
+        if attached_file is not None:
+            st.image(attached_file, width=180)
+        st.markdown(user_question)
+
+    api_key = symptoms require multiple medicines. 9. Do not recommend antibiotics for ordinary cold/flu symptoms. 10. If the user uploads a doctor's prescription, help READ/VERIFY the medicine names against the verified KB and explain what those medicines are generally used for. Do not replace the doctor's instructions. 11. If the image is unclear, say it is unclear and ask for a clearer photo. 12. Match the user's language automatically: English, Urdu script, Pakistani Roman Urdu, or mixed language. 13. Keep responses clean, short, and easy to read. 14. For serious warning signs, advise urgent medical care. In Pakistan mention Rescue 1122. The supplied knowledge-base context is the primary source. Do not use outside medical facts when the KB does not support them. """
 
                 history_for_model = []
                 for item in st.session_state.chat_messages[-10:]:
