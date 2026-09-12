@@ -471,47 +471,44 @@ if st.session_state.image_result:
 
             # -------------------------------------------------
             # Deterministic emergency safety layer
-            # -------------------------------------------------
-            emergency_terms = [
-                "severe chest pain",
-                "difficulty breathing",
-                "can't breathe",
-                "cannot breathe",
-                "unconscious",
-                "seizure",
-                "severe allergic reaction",
-                "anaphylaxis",
-                "overdose",
-                "poisoning",
-                "severe bleeding",
-                "stroke",
-            ]
+# -------------------------------------------------
+emergency_terms = [
+    "severe chest pain",
+    "difficulty breathing",
+    "can't breathe",
+    "cannot breathe",
+    "unconscious",
+    "seizure",
+    "severe allergic reaction",
+    "anaphylaxis",
+    "overdose",
+    "poisoning",
+    "severe bleeding",
+    "stroke",
+]
 
-            lower_question = user_question.lower()
+lower_question = user_question.lower()
 
-                if st.session_state.get("user_id"):
-                    try:
-                        save_message("user", user_question)
-                        save_message("assistant", answer)
+if st.session_state.get("user_id"):
+    try:
+        save_message("user", user_question)
+        save_message("assistant", answer)
 
-                        # Refresh sidebar chat list
-                        st.session_state.chat_list = get_chat_list()
+        # Refresh sidebar chat list
+        st.session_state.chat_list = get_chat_list()
 
-                    except Exception as e:
-                        st.warning(f"Could not save chat history: {e}")
+    except Exception as e:
+        st.warning(f"Could not save chat history: {e}")
 
-            # -------------------------------------------------
-            # Reset input for next message
-            # -------------------------------------------------
-            st.session_state.selected_medicine = "None"
-            st.session_state.image_result = None
-            st.session_state.image_bytes = None
-            st.session_state.input_version += 1
+# -------------------------------------------------
+# Reset input for next message
+# -------------------------------------------------
+st.session_state.selected_medicine = "None"
+st.session_state.image_result = None
+st.session_state.image_bytes = None
+st.session_state.input_version += 1
 
-            st.rerun()
+st.rerun()
 
-        except Exception as e:
-
-            st.error(
-                f"AI response failed: {e}"
-    )
+except Exception as e:
+    st.error(f"AI response failed: {e}")
