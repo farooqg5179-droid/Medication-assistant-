@@ -484,7 +484,7 @@ with st.sidebar:
                 st.session_state.image_bytes = None
                 st.session_state.screening_active = False
                 st.session_state.screening_started = False
-                            options,
+            options,
             index=(
                 options.index(st.session_state.selected_medicine)
                 if st.session_state.selected_medicine in options
