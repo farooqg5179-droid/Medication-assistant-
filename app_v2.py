@@ -1101,7 +1101,7 @@ with st.sidebar:
                 else:
                     # The Edge Function must be deployed as `delete-account`.
                     # It securely deletes the authenticated Supabase user.
-                    supabase.functions.invoke("delete-account")
+                    supabase.functions.invoke("delete-my-account")
 
                     try:
                         supabase.auth.sign_out()
