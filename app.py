@@ -489,27 +489,16 @@ if st.session_state.image_result:
 
             lower_question = user_question.lower()
 
-if st.session_state.get("user_id"):
-    try:
-        save_message(
-            "user",
-            user_question,
-        )
-    except Exception as e:
-        st.error(f"Message save failed: {e}")
+                if st.session_state.get("user_id"):
+                    try:
+                        save_message("user", user_question)
+                        save_message("assistant", answer)
 
-                    save_message(
-                        "assistant",
-                        answer,
-                    )
+                        # Refresh sidebar chat list
+                        st.session_state.chat_list = get_chat_list()
 
-                    # Refresh sidebar chat list.
-                    st.session_state.chat_list = load_saved_chats()
-
-                except Exception as e:
-                    st.warning(
-                        f"Could not save chat history: {e}"
-                    )
+                    except Exception as e:
+                        st.warning(f"Could not save chat history: {e}")
 
             # -------------------------------------------------
             # Reset input for next message
