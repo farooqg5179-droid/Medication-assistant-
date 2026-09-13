@@ -4,3 +4,4 @@ supabase
 python-dotenv
 streamlit-geolocation
 Pillow
+streamlit-searchbox
